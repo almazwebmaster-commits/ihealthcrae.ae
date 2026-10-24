@@ -1,0 +1,449 @@
+// iHealthcare.ae catalogue schema (Phase 2).
+// Bilingual text is stored as paired *En / *Ar columns.
+// Money is Decimal(10,2) in AED, VAT-inclusive.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum ProductTag {
+  BESTSELLER
+  NEW
+  DEAL
+  EXPRESS
+}
+
+/// Top-level categories have no parent; subcategories point to one.
+model Category {
+  id       Int        @id @default(autoincrement())
+  slug     String     @unique
+  nameEn   String
+  nameAr   String
+  /// Colour key for tinted UI surfaces (see src/lib/tints.ts)
+  tint     String     @default("brand")
+  position Int        @default(0)
+  parentId Int?
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+
+  products    Product[] @relation("ProductCategory")
+  subProducts Product[] @relation("ProductSubcategory")
+
+  @@index([parentId])
+}
+
+model Brand {
+  id        Int       @id @default(autoincrement())
+  slug      String    @unique
+  name      String
+  countryEn String?
+  countryAr String?
+  logoUrl   String?
+  products  Product[]
+}
+
+model Product {
+  id            Int           @id @default(autoincrement())
+  slug          String        @unique
+  sku           String        @unique
+  status        ProductStatus @default(DRAFT)
+  nameEn        String
+  nameAr        String
+  descEn        String        @default("")
+  descAr        String        @default("")
+  brandId       Int
+  brand         Brand         @relation(fields: [brandId], references: [id])
+  /// Top-level category (denormalised for fast filtering)
+  categoryId    Int
+  category      Category      @relation("ProductCategory", fields: [categoryId], references: [id])
+  subcategoryId Int
+  subcategory   Category      @relation("ProductSubcategory", fields: [subcategoryId], references: [id])
+
+  price         Decimal       @db.Decimal(10, 2)
+  /// Strike-through "was" price; null when not on sale
+  compareAt     Decimal?      @db.Decimal(10, 2)
+  stock         Int           @default(0)
+  tags          ProductTag[]
+
+  /// Subscribe & save discount (%); null = not eligible
+  subscribePct  Int?
+
+  rating        Decimal       @default(0) @db.Decimal(2, 1)
+  reviewCount   Int           @default(0)
+
+  // Sort helpers, recomputed on every write (see src/server/catalog-write.ts)
+  popularity    Float         @default(0)
+  discountPct   Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  variants      ProductVariant[]
+  images        ProductImage[]
+  tiers         PriceTier[]
+  wishlistItems WishlistItem[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  subscriptions Subscription[]
+
+  @@index([status, categoryId])
+  @@index([status, subcategoryId])
+  @@index([brandId])
+}
+
+/// Purchasable option (size, pack count, flavour…). Products without variants sell at Product.price.
+model ProductVariant {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku       String  @unique
+  labelEn   String
+  labelAr   String
+  price     Decimal @db.Decimal(10, 2)
+  position  Int     @default(0)
+
+  @@index([productId])
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  width     Int
+  height    Int
+  altEn     String?
+  altAr     String?
+  position  Int     @default(0)
+
+  @@index([productId])
+}
+
+/// Buy more, save more: buying at least `minQty` units gives `pct`% off.
+model PriceTier {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  minQty    Int
+  pct       Int
+
+  @@unique([productId, minQty])
+}
+
+
+// ───────────────────────── Accounts (Better Auth) ─────────────────────────
+// Field names follow Better Auth's core schema + admin plugin (role/ban fields).
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  /// Admin plugin: "user" (customer), "staff" or "admin"
+  role          String    @default("user")
+  banned        Boolean?  @default(false)
+  banReason     String?
+  banExpires    DateTime?
+  phone         String?
+  /// Stripe customer (created at first card checkout; holds saved cards for subscriptions)
+  stripeCustomerId String? @unique
+  /// Preferred language for emails: "en" | "ar"
+  locale        String    @default("en")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions  Session[]
+  accounts  Account[]
+  addresses Address[]
+  wishlist  WishlistItem[]
+  cartItems CartItem[]
+  orders    Order[]
+  subscriptions Subscription[]
+
+  @@map("user")
+}
+
+model Session {
+  id             String   @id
+  token          String   @unique
+  expiresAt      DateTime
+  ipAddress      String?
+  userAgent      String?
+  /// Admin plugin: set while a staff member is impersonating this user
+  impersonatedBy String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
+}
+
+/// A sign-in method: "credential" (email + password) or a social provider.
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+/// Email-verification and password-reset tokens.
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ───────────────────────── Customer data ─────────────────────────
+
+model Address {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// e.g. "Home", "Office"
+  label     String?
+  fullName  String
+  phone     String
+  /// One of src/lib/emirates.ts
+  emirate   String
+  area      String
+  street    String?
+  building  String
+  unit      String?
+  landmark  String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model WishlistItem {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, productId])
+}
+
+/// Signed-in shopper's cart. option = -1 when the product has no variants;
+/// subWeeks = 0 for one-time purchases (sentinels keep the unique key NULL-free).
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  option    Int      @default(-1)
+  subWeeks  Int      @default(0)
+  qty       Int
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId, option, subWeeks])
+}
+
+// ───────────────────────── Orders ─────────────────────────
+// Created by checkout (Phase 4); managed in /admin/orders. Product data is
+// snapshotted onto each line so later catalogue edits never change past orders.
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PLACED
+  PROCESSING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CARD
+  COD
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+model Order {
+  id            Int           @id @default(autoincrement())
+  /// Human-facing number, e.g. IHC-100042
+  number        String        @unique
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status        OrderStatus   @default(PLACED)
+  paymentMethod PaymentMethod
+  paymentStatus PaymentStatus @default(UNPAID)
+  locale        String        @default("en")
+  /// "standard" | "express"
+  deliveryMethod String       @default("standard")
+  stripePaymentIntentId String? @unique
+  /// Set on orders created by a subscription renewal
+  subscriptionId Int?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  // Contact + delivery address (snapshot)
+  email         String
+  fullName      String
+  phone         String
+  emirate       String
+  area          String
+  street        String?
+  building      String
+  unit          String?
+  landmark      String?
+  customerNote  String?
+
+  // Money (AED, VAT-inclusive)
+  itemsTotal    Decimal       @db.Decimal(10, 2)
+  discount      Decimal       @default(0) @db.Decimal(10, 2)
+  deliveryFee   Decimal       @default(0) @db.Decimal(10, 2)
+  total         Decimal       @db.Decimal(10, 2)
+  vatAmount     Decimal       @db.Decimal(10, 2)
+
+  /// Demo data created by scripts/seed-demo-orders.ts
+  isDemo        Boolean       @default(false)
+  placedAt      DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  items         OrderItem[]
+  events        OrderEvent[]
+
+  @@index([status, placedAt])
+  @@index([userId])
+}
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  orderId     Int
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   Int?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  slug        String
+  sku         String
+  nameEn      String
+  nameAr      String
+  optionEn    String?
+  optionAr    String?
+  imageUrl    String?
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  qty         Int
+  lineTotal   Decimal  @db.Decimal(10, 2)
+  /// Subscribe & save interval (weeks); null = one-time
+  subWeeks    Int?
+
+  @@index([orderId])
+}
+
+/// Status history + internal notes for an order.
+model OrderEvent {
+  id        Int          @id @default(autoincrement())
+  orderId   Int
+  order     Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  /// New status, or null for a note-only event
+  status    OrderStatus?
+  note      String?
+  /// Staff member who made the change (null = system/customer)
+  actorId   String?
+  actorName String?
+  createdAt DateTime     @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+/// Who changed what in the admin portal.
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  actorId   String
+  actorName String
+  action    String
+  entity    String
+  entityId  String
+  summary   String?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+// ───────────────────────── Subscriptions (Subscribe & save) ─────────────────────────
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+}
+
+/// One product delivered every N weeks, charged off-session to the saved card.
+model Subscription {
+  id             Int                @id @default(autoincrement())
+  userId         String
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId      Int
+  product        Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  /// Variant index, -1 = none
+  option         Int                @default(-1)
+  qty            Int
+  intervalWeeks  Int
+  status         SubscriptionStatus @default(ACTIVE)
+  nextDeliveryAt DateTime
+  stripePaymentMethodId String?
+  locale         String             @default("en")
+
+  // Delivery address (snapshot, editable later)
+  fullName       String
+  phone          String
+  emirate        String
+  area           String
+  street         String?
+  building       String
+  unit           String?
+  landmark       String?
+
+  /// Last renewal failure (e.g. card declined) — shown to the customer and staff
+  lastError      String?
+  createdFromOrderId Int?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  orders         Order[]
+
+  @@index([status, nextDeliveryAt])
+  @@index([userId])
+}

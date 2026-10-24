@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+/*
+ * iHealthcare design tokens
+ * Boxy system: sharp 2–4px corners, 1px hairline borders, dense grids.
+ */
+@theme {
+  /* Fonts (CSS vars are injected by next/font in the locale layout) */
+  --font-sans: var(--font-inter), var(--font-arabic), ui-sans-serif, system-ui,
+    sans-serif;
+  --font-arabic-first: var(--font-arabic), var(--font-inter), ui-sans-serif,
+    system-ui, sans-serif;
+
+  /* Brand — Pharmacy Teal */
+  --color-brand-50: #e8f5f4;
+  --color-brand-100: #c9e8e5;
+  --color-brand-200: #96d2cc;
+  --color-brand-300: #5cb7af;
+  --color-brand-400: #2e9a92;
+  --color-brand-500: #0f857c;
+  --color-brand-600: #0b6e69;
+  --color-brand-700: #095a56;
+  --color-brand-800: #084745;
+  --color-brand-900: #063634;
+  --color-brand-950: #032321;
+
+  /* Accent — Saffron Amber (deals, primary CTAs, the "i" dot) */
+  --color-accent-50: #fff8e1;
+  --color-accent-100: #ffedb3;
+  --color-accent-200: #ffe180;
+  --color-accent-300: #ffd866;
+  --color-accent-400: #ffc62e;
+  --color-accent-500: #ffb400;
+  --color-accent-600: #e09a00;
+  --color-accent-700: #b87a00;
+
+  /* Ink — text & dark chrome */
+  --color-ink-950: #08111d;
+  --color-ink-900: #0e1b2c;
+  --color-ink-800: #1b2a3d;
+  --color-ink-700: #334155;
+  --color-ink-600: #475569;
+  --color-ink-500: #64748b;
+  --color-ink-400: #94a3b8;
+  --color-ink-300: #cbd5e1;
+
+  /* Surfaces & lines */
+  --color-surface: #f2f4f5;
+  --color-surface-raised: #ffffff;
+  --color-line: #dde2e5;
+  --color-line-strong: #c5ccd1;
+
+  /* Semantic */
+  --color-sale: #d92d20;
+  --color-sale-50: #fef3f2;
+  --color-success: #12b76a;
+  --color-success-50: #ecfdf3;
+  --color-info: #2e90fa;
+  --color-info-50: #eff8ff;
+
+  /* Boxy radii — everything stays near-square */
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 6px;
+
+  /* Elevation — flat, hairline-led */
+  --shadow-box: 0 1px 0 0 rgb(14 27 44 / 0.04);
+  --shadow-pop: 0 8px 24px -8px rgb(14 27 44 / 0.18);
+
+  --container-site: 1440px;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Never let off-screen content (closed drawers, carousel tracks) widen the
+     page — on iOS that zooms/shifts the layout and misplaces every tap.
+     `clip` (unlike `hidden`) keeps position: sticky working. */
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  body {
+    background: var(--color-surface);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+  }
+
+  html[lang="ar"] body {
+    font-family: var(--font-arabic-first);
+  }
+
+  ::selection {
+    background: var(--color-accent-300);
+    color: var(--color-ink-900);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent-500);
+    outline-offset: 2px;
+  }
+}
+
+@utility container-site {
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--container-site);
+  padding-inline: 1rem;
+  @media (width >= 64rem) {
+    padding-inline: 1.5rem;
+  }
+}
+
+/* Mirrors directional icons (chevrons, arrows) in RTL */
+@utility flip-rtl {
+  &:where([dir="rtl"] *) {
+    transform: scaleX(-1);
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

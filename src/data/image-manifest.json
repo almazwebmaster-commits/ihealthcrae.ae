@@ -1,0 +1,27 @@
+{
+  "H3-D": {
+    "src": "/images/home/hero/devices-desktop.ec3513ea.webp",
+    "width": 1568,
+    "height": 672
+  },
+  "H3-DR": {
+    "src": "/images/home/hero/devices-desktop-rtl.19bc6f90.webp",
+    "width": 1568,
+    "height": 672
+  },
+  "H3-M": {
+    "src": "/images/home/hero/devices-mobile.d08794f9.webp",
+    "width": 1080,
+    "height": 1350
+  },
+  "H4-D": {
+    "src": "/images/home/hero/baby-desktop.0bd2a1fc.webp",
+    "width": 1568,
+    "height": 672
+  },
+  "H4-DR": {
+    "src": "/images/home/hero/baby-desktop-rtl.2c0e2cfa.webp",
+    "width": 1568,
+    "height": 672
+  }
+}
