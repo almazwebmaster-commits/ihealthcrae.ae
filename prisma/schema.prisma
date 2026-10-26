@@ -98,6 +98,7 @@ model Product {
   cartItems     CartItem[]
   orderItems    OrderItem[]
   subscriptions Subscription[]
+  redirects     ProductRedirect[]
 
   @@index([status, categoryId])
   @@index([status, subcategoryId])
@@ -105,6 +106,16 @@ model Product {
 }
 
 /// Purchasable option (size, pack count, flavour…). Products without variants sell at Product.price.
+/// Old product web addresses (/p/<slug>) that permanently redirect to the product's current one.
+model ProductRedirect {
+  slug      String   @id
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
 model ProductVariant {
   id        Int     @id @default(autoincrement())
   productId Int

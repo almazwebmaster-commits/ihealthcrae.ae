@@ -106,6 +106,12 @@ export const getProduct = cache(async (slug: string) => {
   return row ? toProduct(row) : undefined;
 });
 
+/** Current address of a product whose old address was `slug` (after a rename), if it is live. */
+export const redirectedSlug = cache(async (slug: string) => {
+  const r = await db.productRedirect.findUnique({ where: { slug }, select: { product: { select: { slug: true, status: true } } } });
+  return r?.product.status === "ACTIVE" ? r.product.slug : undefined;
+});
+
 /** For the cart: looks up many products at once, preserving nothing about order. */
 export async function getProductsBySlugs(slugs: string[]) {
   if (!slugs.length) return [];

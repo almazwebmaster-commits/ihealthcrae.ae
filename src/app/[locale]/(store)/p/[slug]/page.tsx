@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Breadcrumbs } from "@/components/catalog/Breadcrumbs";
 import { ProductCard } from "@/components/catalog/ProductCard";
@@ -14,7 +14,7 @@ import { Box, BoxHeader } from "@/components/ui/Box";
 import { Link } from "@/i18n/navigation";
 import { discountPct } from "@/lib/catalog-types";
 import { formatNumber, tr } from "@/lib/i18n-utils";
-import { getProduct, relatedProducts } from "@/server/catalog";
+import { getProduct, redirectedSlug, relatedProducts } from "@/server/catalog";
 
 // Rendered on first request, then cached and refreshed every 5 minutes.
 export const revalidate = 300;
@@ -45,7 +45,12 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/p/[sl
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const product = await getProduct(slug);
-  if (!product) notFound();
+  if (!product) {
+    // Renamed products keep their old links (and Google ranking) via a permanent redirect.
+    const moved = await redirectedSlug(slug);
+    if (moved) permanentRedirect(`/${locale}/p/${moved}`);
+    notFound();
+  }
 
   const t = await getTranslations("Product");
   const tl = await getTranslations("Listing");

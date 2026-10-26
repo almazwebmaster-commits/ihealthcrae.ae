@@ -206,7 +206,7 @@ export function ProductEditor({ initial, options }: { initial?: Initial; options
       </Section>
 
       <ProductCopyAssistant
-        slug={v.slug}
+        isLive={!isNew && start.status === "ACTIVE"}
         categories={options.categories}
         currentCategory={category}
         currentSubcategory={v.subcategory}
@@ -215,6 +215,8 @@ export function ProductEditor({ initial, options }: { initial?: Initial; options
           set("subcategory", sub);
         }}
         product={{
+          id: start.id,
+          slug: v.slug,
           nameEn: v.nameEn,
           nameAr: v.nameAr,
           descEn: v.descEn,
@@ -225,14 +227,15 @@ export function ProductEditor({ initial, options }: { initial?: Initial; options
           options: v.variants.map((o) => o.labelEn).filter(Boolean),
           price: Number.isFinite(num(price)) ? num(price) : null,
         }}
-        onApply={(field, value) =>
+        onApply={(field, value) => {
+          if (field === "slug") setSlugTouched(true);
           setV((s) => ({
             ...s,
             [field]: value,
             // New products keep their URL in step with the title; live products keep theirs.
             ...(field === "nameEn" && !slugTouched ? { slug: slugify(value) } : {}),
-          }))
-        }
+          }));
+        }}
       />
 
       <Section title={t("organisation")}>

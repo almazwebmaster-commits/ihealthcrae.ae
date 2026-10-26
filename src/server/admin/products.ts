@@ -126,7 +126,7 @@ export async function saveProduct(actor: Actor, raw: unknown): Promise<SaveProdu
     brandId = b.id;
   }
 
-  const existing = v.id ? await db.product.findUnique({ where: { id: v.id }, select: { sku: true, rating: true, reviewCount: true } }) : null;
+  const existing = v.id ? await db.product.findUnique({ where: { id: v.id }, select: { sku: true, slug: true, rating: true, reviewCount: true } }) : null;
   if (v.id && !existing) return { ok: false, errors: { form: "notFound" } };
 
   const data = {
@@ -155,6 +155,11 @@ export async function saveProduct(actor: Actor, raw: unknown): Promise<SaveProdu
     const sku = existing?.sku ?? `IHC-${String(product.id).padStart(5, "0")}`;
     if (!existing) await tx.product.update({ where: { id: product.id }, data: { sku } });
 
+    // Web address changes: the new address is live, the old one redirects here (301) for links and Google.
+    await tx.productRedirect.deleteMany({ where: { slug: v.slug } });
+    if (existing && existing.slug !== v.slug)
+      await tx.productRedirect.upsert({ where: { slug: existing.slug }, create: { slug: existing.slug, productId: product.id }, update: { productId: product.id } });
+
     await tx.productVariant.deleteMany({ where: { productId: product.id } });
     await tx.priceTier.deleteMany({ where: { productId: product.id } });
     await tx.productImage.deleteMany({ where: { productId: product.id } });
@@ -172,6 +177,7 @@ export async function saveProduct(actor: Actor, raw: unknown): Promise<SaveProdu
   });
 
   await audit(actor, v.id ? "product.update" : "product.create", "product", id, `${v.nameEn} (${v.status})`);
+  if (existing && existing.slug !== v.slug) await audit(actor, "product.slug", "product", id, `/p/${existing.slug} → /p/${v.slug}`);
   return { ok: true, id };
 }
 

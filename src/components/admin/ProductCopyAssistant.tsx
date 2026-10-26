@@ -14,7 +14,8 @@ import { tr } from "@/lib/i18n-utils";
 import { cn } from "@/lib/utils";
 import type { CopyRequestT, CopySuggestion } from "@/server/ai/product-copy";
 
-type Field = "nameEn" | "nameAr" | "descEn" | "descAr";
+type TextField = "nameEn" | "nameAr" | "descEn" | "descAr";
+type Field = TextField | "slug";
 type Row = Field | "category";
 type Categories = {
   slug: string;
@@ -23,7 +24,7 @@ type Categories = {
   children: { slug: string; nameEn: string; nameAr: string; googleCategoryId?: number | null }[];
 }[];
 
-const TEXT_ROWS: { key: Field; dir: "ltr" | "rtl"; limit: number }[] = [
+const TEXT_ROWS: { key: TextField; dir: "ltr" | "rtl"; limit: number }[] = [
   { key: "nameEn", dir: "ltr", limit: 70 },
   { key: "nameAr", dir: "rtl", limit: 70 },
   { key: "descEn", dir: "ltr", limit: 0 },
@@ -63,7 +64,7 @@ function Current({ text, dir, empty }: { text: string; dir?: "ltr" | "rtl"; empt
 
 export function ProductCopyAssistant({
   product,
-  slug,
+  isLive,
   categories,
   currentCategory,
   currentSubcategory,
@@ -71,7 +72,8 @@ export function ProductCopyAssistant({
   onCategory,
 }: {
   product: Omit<CopyRequestT, "instructions">;
-  slug: string;
+  /** Published product: changing its address adds a redirect from the old one */
+  isLive: boolean;
   categories: Categories;
   currentCategory: string;
   currentSubcategory: string;
@@ -86,7 +88,7 @@ export function ProductCopyAssistant({
   const [suggestion, setSuggestion] = useState<CopySuggestion>();
   /** Accepted rows → the value they replaced, so each can be undone. */
   const [accepted, setAccepted] = useState<Partial<Record<Row, string>>>({});
-  const [expanded, setExpanded] = useState<Partial<Record<Field, boolean>>>({});
+  const [expanded, setExpanded] = useState<Partial<Record<TextField, boolean>>>({});
   const [error, setError] = useState<string>();
   const [pending, start] = useTransition();
   const [creating, startCreating] = useTransition();
@@ -105,7 +107,7 @@ export function ProductCopyAssistant({
   const pickedExisting = pick?.kind === "existing" ? findSub(pick.subcategory) : undefined;
   const categoryChanges = !!pick && !(pick.kind === "existing" && pick.subcategory === currentSubcategory);
   const pendingRows: Row[] = suggestion
-    ? [...(categoryChanges ? (["category"] as const) : []), ...TEXT_ROWS.map((r) => r.key).filter((k) => suggestion[k] !== product[k])].filter((r) => !(r in accepted))
+    ? [...(categoryChanges ? (["category"] as const) : []), ...([...TEXT_ROWS.map((r) => r.key), "slug"] as Field[]) /* slug last: a new product's title would otherwise overwrite it */.filter((k) => suggestion[k] !== product[k])].filter((r) => !(r in accepted))
     : [];
 
   function ask() {
@@ -287,6 +289,24 @@ export function ProductCopyAssistant({
                 </ReviewRow>
               )}
 
+              {/* Web address */}
+              <ReviewRow
+                label={t("field.slug")}
+                meta={t("charsOf", { count: suggestion.slug.length, limit: 60 })}
+                action={suggestion.slug === product.slug && !("slug" in accepted) ? <span className="text-xs text-ink-500">{t("noChange")}</span> : actionFor("slug", () => acceptText("slug"))}
+              >
+                <p className="break-all text-sm font-semibold text-ink-900" dir="ltr">
+                  <span className="font-normal text-ink-500">ihealthcare.ae/p/</span>
+                  {suggestion.slug}
+                </p>
+                {(suggestion.slug !== product.slug || "slug" in accepted) && (
+                  <>
+                    <Current text={`ihealthcare.ae/p/${"slug" in accepted ? accepted.slug : product.slug}`} dir="ltr" empty={t("none")} />
+                    {isLive && <p className="mt-2 text-xs text-ink-600">{t("slugRedirect")}</p>}
+                  </>
+                )}
+              </ReviewRow>
+
               {/* Titles and descriptions */}
               {TEXT_ROWS.map(({ key, dir, limit }) => {
                 const text = suggestion[key];
@@ -358,7 +378,7 @@ export function ProductCopyAssistant({
         {/* Live search preview of the form as it stands */}
         <div className="rounded-sm border border-line p-3" dir="ltr">
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-ink-500">{t("preview")}</p>
-          <p className="text-xs text-ink-600">ihealthcare.ae › p › {slug || "…"}</p>
+          <p className="text-xs text-ink-600">ihealthcare.ae › p › {product.slug || "…"}</p>
           <p className="truncate text-base text-[#1a0dab]">{clip(product.nameEn || product.nameAr || "—", TITLE_MAX)} | iHealthcare.ae</p>
           <p className="line-clamp-2 text-sm text-ink-700">{clip(product.descEn, SNIPPET_MAX) || t("noDescription")}</p>
         </div>

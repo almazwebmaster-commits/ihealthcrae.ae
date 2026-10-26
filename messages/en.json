@@ -565,7 +565,7 @@
       },
       "ai": {
         "title": "AI assistant",
-        "hint": "Suggests the category (matched to Google Merchant Center), title and description in English and Arabic. Review each suggestion before accepting.",
+        "hint": "Suggests the category (matched to Google Merchant Center), web address, title and description in English and Arabic. Review each suggestion before accepting.",
         "preview": "Google preview",
         "noDescription": "No description yet — Google will pick text from the page.",
         "instructions": "Notes for the AI (optional)",
@@ -578,7 +578,8 @@
           "nameEn": "Title (English)",
           "nameAr": "Title (Arabic)",
           "descEn": "Description (English)",
-          "descAr": "Description (Arabic)"
+          "descAr": "Description (Arabic)",
+          "slug": "Web address"
         },
         "discard": "Discard",
         "reviewNote": "Nothing is saved until you press Save product.",
@@ -614,7 +615,8 @@
         "words": "{count} words",
         "noChange": "No change",
         "showMore": "Show more",
-        "showLess": "Show less"
+        "showLess": "Show less",
+        "slugRedirect": "The old address will redirect to the new one automatically, so existing links and Google rankings are kept."
       }
     },
     "importer": {

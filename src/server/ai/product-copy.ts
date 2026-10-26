@@ -3,7 +3,9 @@ import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { ApiError, GoogleGenAI } from "@google/genai";
 import { z } from "zod";
+import { slugify } from "@/lib/admin/product-input";
 import { googleCategories, googleCategoryPath } from "@/lib/google-taxonomy";
+import { db } from "@/server/db";
 import { getEditorOptions } from "@/server/admin/products";
 
 // Gemini (free tier) is used when GEMINI_API_KEY is set; Claude when only ANTHROPIC_API_KEY is.
@@ -17,6 +19,9 @@ const gemini = () => (geminiClient ??= new GoogleGenAI({ apiKey: process.env.GEM
 
 /** What the editor sends: the product as it is right now (any field may be empty). */
 export const CopyRequest = z.object({
+  /** Product id when editing (so its own address doesn't count as taken) */
+  id: z.number().int().positive().optional(),
+  slug: z.string().max(120).default(""),
   nameEn: z.string().max(200).default(""),
   nameAr: z.string().max(200).default(""),
   descEn: z.string().max(5000).default(""),
@@ -36,6 +41,7 @@ const copyFields = {
   nameAr: z.string().describe("SEO product title in Arabic"),
   descEn: z.string().describe("Product description in English, plain text, paragraphs separated by a blank line"),
   descAr: z.string().describe("Product description in Arabic, plain text, paragraphs separated by a blank line"),
+  slug: z.string().describe("Web address for the product page, e.g. cerave-moisturising-cream-454g"),
   keywordsEn: z.array(z.string()).describe("3-6 search phrases UAE shoppers would type in English"),
   keywordsAr: z.array(z.string()).describe("3-6 search phrases UAE shoppers would type in Arabic"),
   missing: z.array(z.string()).describe("Facts the copy would benefit from but were not provided (e.g. size, scent, age range). Empty if none."),
@@ -86,6 +92,11 @@ Descriptions
 - The first sentence must stand alone as the Google snippet: under 160 characters, naming the product and its main benefit with the primary search phrase.
 - Then one or two short paragraphs on what it is, who it suits and how it is used, followed by a few key points as separate lines starting with "• ". Around 80-150 words in total. Plain text only - no markdown, headings or emoji.
 
+Web address (slug)
+- Lowercase English words joined by hyphens: brand + product + the key attribute + size, e.g. "cerave-moisturising-cream-454g", "abena-maternity-pads-15-pack".
+- 3-8 words and under 60 characters; no stop words (the, and, for, with), no promotional words, no years or prices. Do not repeat words.
+- If the current address already follows these rules, return it unchanged.
+
 Arabic
 - Write the Arabic independently in fluent Modern Standard Arabic for Gulf shoppers; do not translate word for word. Keep brand and product-line names in their original Latin spelling, and use Western digits for sizes.
 
@@ -125,6 +136,7 @@ export async function suggestProductCopy(raw: unknown): Promise<CopyResult> {
     .join("\n");
 
   const info = [
+    `Current web address: ${p.slug ? `/p/${p.slug}` : "(none)"}`,
     `Current English title: ${p.nameEn || "(none)"}`,
     `Current Arabic title: ${p.nameAr || "(none)"}`,
     `Brand: ${p.brand || "(not set)"}`,
@@ -145,7 +157,19 @@ export async function suggestProductCopy(raw: unknown): Promise<CopyResult> {
 
   const { googleCategoryId, categoryMode, subcategory, newParent, newParentNameEn, newParentNameAr, newSubNameEn, newSubNameAr, categoryReasonEn, categoryReasonAr, categoryConfidence, ...copy } =
     result.suggestion;
-  return { ok: true, suggestion: { ...copy, category: resolveCategory() } };
+  return { ok: true, suggestion: { ...copy, slug: await cleanSlug(copy.slug), category: resolveCategory() } };
+
+  /** Valid format, short, and not used by another product (its own current address is fine). */
+  async function cleanSlug(raw: string) {
+    let base = slugify(raw) || slugify(copy.nameEn) || p.slug;
+    if (base.length > 60) base = base.slice(0, 60).replace(/-[^-]*$/, "");
+    if (base === p.slug) return base;
+    for (let i = 1; ; i++) {
+      const candidate = i === 1 ? base : `${base}-${i}`;
+      const taken = await db.product.findFirst({ where: { slug: candidate, ...(p.id ? { id: { not: p.id } } : {}) }, select: { id: true } });
+      if (!taken) return candidate;
+    }
+  }
 
   /** Turns the model's flat answer into a pick the editor can trust. */
   function resolveCategory(): CopySuggestion["category"] {
