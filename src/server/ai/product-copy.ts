@@ -1,13 +1,17 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
+import { ApiError, GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 
-let client: Anthropic | undefined;
+// Gemini (free tier) is used when GEMINI_API_KEY is set; Claude when only ANTHROPIC_API_KEY is.
+const provider = () => (process.env.GEMINI_API_KEY ? "gemini" : process.env.ANTHROPIC_API_KEY ? "claude" : null);
+export const aiConfigured = () => provider() !== null;
 
-export const aiConfigured = () => !!process.env.ANTHROPIC_API_KEY;
-
-const anthropic = () => (client ??= new Anthropic());
+let claudeClient: Anthropic | undefined;
+let geminiClient: GoogleGenAI | undefined;
+const anthropic = () => (claudeClient ??= new Anthropic());
+const gemini = () => (geminiClient ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }));
 
 /** What the editor sends: the product as it is right now (any field may be empty). */
 export const CopyRequest = z.object({
@@ -77,6 +81,42 @@ export async function suggestProductCopy(raw: unknown): Promise<CopyResult> {
     `Current Arabic description:\n${p.descAr || "(none)"}`,
   ].join("\n");
 
+  const prompt = `<product>\n${info}\n</product>\n\n<staff_instructions>\n${p.instructions || "(none)"}\n</staff_instructions>\n\nWrite the improved titles and descriptions.`;
+  return provider() === "gemini" ? withGemini(prompt) : withClaude(prompt);
+}
+
+/** Free-tier models get overloaded (503) or hit per-model daily quotas (429), so try the next one. */
+const GEMINI_MODELS = ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-flash-lite-latest"];
+
+async function withGemini(prompt: string): Promise<CopyResult> {
+  const models = process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL, ...GEMINI_MODELS] : GEMINI_MODELS;
+  for (const model of [...new Set(models)]) {
+    try {
+      const response = await gemini().models.generateContent({
+        model,
+        contents: prompt,
+        config: {
+          systemInstruction: SYSTEM,
+          responseMimeType: "application/json",
+          responseJsonSchema: z.toJSONSchema(Suggestion),
+        },
+      });
+      if (response.promptFeedback?.blockReason || !response.text) return { ok: false, error: "refused" };
+      const out = Suggestion.safeParse(JSON.parse(response.text));
+      return out.success ? { ok: true, suggestion: out.data } : { ok: false, error: "failed" };
+    } catch (e) {
+      if (e instanceof ApiError && (e.status === 429 || e.status >= 500)) {
+        console.warn(`[ai] ${model} unavailable (${e.status}), trying next model`);
+        continue;
+      }
+      console.error("[ai] product copy failed (gemini):", e instanceof ApiError ? `${e.status} ${e.message}` : e);
+      return { ok: false, error: "failed" };
+    }
+  }
+  return { ok: false, error: "busy" };
+}
+
+async function withClaude(prompt: string): Promise<CopyResult> {
   try {
     const response = await anthropic().beta.messages.parse({
       model: "claude-opus-5-5",
@@ -85,19 +125,14 @@ export async function suggestProductCopy(raw: unknown): Promise<CopyResult> {
       fallbacks: "default",
       output_config: { effort: "medium", format: betaZodOutputFormat(Suggestion) },
       system: SYSTEM,
-      messages: [
-        {
-          role: "user",
-          content: `<product>\n${info}\n</product>\n\n<staff_instructions>\n${p.instructions || "(none)"}\n</staff_instructions>\n\nWrite the improved titles and descriptions.`,
-        },
-      ],
+      messages: [{ role: "user", content: prompt }],
     });
     if (response.stop_reason === "refusal") return { ok: false, error: "refused" };
     if (!response.parsed_output) return { ok: false, error: "failed" };
     return { ok: true, suggestion: response.parsed_output };
   } catch (e) {
     if (e instanceof Anthropic.RateLimitError || e instanceof Anthropic.InternalServerError) return { ok: false, error: "busy" };
-    console.error("[ai] product copy failed:", e instanceof Anthropic.APIError ? `${e.status} ${e.message}` : e);
+    console.error("[ai] product copy failed (claude):", e instanceof Anthropic.APIError ? `${e.status} ${e.message}` : e);
     return { ok: false, error: "failed" };
   }
 }

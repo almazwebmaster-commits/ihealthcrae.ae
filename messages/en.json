@@ -590,7 +590,7 @@
         "keywordsAr": "Search phrases (Arabic)",
         "missing": "Adding these details would improve the copy:",
         "errors": {
-          "notConfigured": "AI suggestions aren't set up yet — add ANTHROPIC_API_KEY to the server settings.",
+          "notConfigured": "AI suggestions aren't set up yet — add GEMINI_API_KEY (free at aistudio.google.com) to the server settings.",
           "invalid": "Enter at least a product name first.",
           "refused": "The AI couldn't write copy for this product. Please write it manually.",
           "busy": "The AI service is busy. Please try again in a minute.",

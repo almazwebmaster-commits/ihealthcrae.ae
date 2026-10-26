@@ -50,7 +50,7 @@ Optional offline database: `npm run db:start` runs a local Prisma Dev Postgres â
   CSV export and import (check first, then apply; rows matched by `slug`).
   **AI suggestions for SEO** (Claude, `src/server/ai/product-copy.ts`): suggests EN/AR titles, descriptions and
   search phrases from the product's own details, with a Google preview; staff review and apply, then save.
-  Needs `ANTHROPIC_API_KEY` (console.anthropic.com) on the server.
+  Uses the free Gemini tier when `GEMINI_API_KEY` is set (aistudio.google.com), otherwise Claude via `ANTHROPIC_API_KEY`.
 - **Orders** â€” status tabs, search, detail with timeline, status changes (allowed steps only; COD is marked
   paid on delivery; cancelling restocks), internal notes, printable tax invoice.
 - Every staff change is written to `AuditLog`.
