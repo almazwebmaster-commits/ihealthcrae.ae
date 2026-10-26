@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { ProductStatus, SaveProductResult } from "@/lib/admin/product-input";
 import { staffActor } from "@/server/admin/guard";
+import { createCategory, linkGoogleCategory } from "@/server/admin/categories";
 import { suggestProductCopy, type CopyResult } from "@/server/ai/product-copy";
 import { importProductsCsv, saveProduct, setProductStatus, type ImportResult } from "@/server/admin/products";
 
@@ -26,6 +27,19 @@ export async function setProductStatusAction(id: number, status: ProductStatus) 
 export async function suggestCopyAction(input: unknown): Promise<CopyResult> {
   await staffActor();
   return suggestProductCopy(input);
+}
+
+/** Creates a (sub)category proposed by the AI assistant; returns the slugs to select. */
+export async function createCategoryAction(input: unknown) {
+  const actor = await staffActor();
+  const result = await createCategory(actor, input);
+  refreshStore();
+  return result;
+}
+
+export async function linkGoogleCategoryAction(slug: string, googleCategoryId: number) {
+  const actor = await staffActor();
+  await linkGoogleCategory(actor, slug, googleCategoryId);
 }
 
 export async function importProductsAction(_prev: ImportResult | null, form: FormData): Promise<ImportResult> {

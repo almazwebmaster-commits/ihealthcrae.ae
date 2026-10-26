@@ -87,7 +87,7 @@ export async function getEditorOptions() {
       slug: c.slug,
       nameEn: c.nameEn,
       nameAr: c.nameAr,
-      children: c.children.map((s) => ({ slug: s.slug, nameEn: s.nameEn, nameAr: s.nameAr })),
+      children: c.children.map((s) => ({ slug: s.slug, nameEn: s.nameEn, nameAr: s.nameAr, googleCategoryId: s.googleCategoryId })),
     })),
   };
 }

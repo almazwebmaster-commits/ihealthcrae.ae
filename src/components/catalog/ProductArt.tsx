@@ -1,7 +1,7 @@
 import type { Product } from "@/lib/catalog-types";
 import { tintClasses } from "@/lib/tints";
 import { cn } from "@/lib/utils";
-import { categoryIcons } from "./category-icons";
+import { CategoryIcon } from "./CategoryIcon";
 
 export type ArtProduct = Pick<Product, "brandName" | "category" | "categoryTint">;
 
@@ -19,12 +19,11 @@ export function ProductArt({
   className?: string;
 }) {
   const tint = tintClasses(product.categoryTint);
-  const Icon = categoryIcons[product.category];
 
   if (view === 2) {
     return (
       <div className={cn("@container relative flex aspect-square items-center justify-center overflow-hidden", tint.bg, className)}>
-        <Icon className={cn("size-[45cqw]", tint.fg)} strokeWidth={1.25} aria-hidden />
+        <CategoryIcon slug={product.category} className={cn("size-[45cqw]", tint.fg)} strokeWidth={1.25} aria-hidden />
       </div>
     );
   }
@@ -46,7 +45,7 @@ export function ProductArt({
       >
         <div className={cn("h-[16%]", tint.solid)} />
         <div className="flex flex-1 flex-col items-center justify-center gap-[3cqw] p-[3cqw] text-center">
-          <Icon className={cn("size-[16cqw]", tint.fg)} strokeWidth={1.75} aria-hidden />
+          <CategoryIcon slug={product.category} className={cn("size-[16cqw]", tint.fg)} strokeWidth={1.75} aria-hidden />
           <span
             dir="ltr"
             className="line-clamp-2 text-[5.5cqw] font-extrabold uppercase leading-tight tracking-tight text-ink-900"

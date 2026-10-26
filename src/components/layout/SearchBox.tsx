@@ -3,7 +3,7 @@
 import { ArrowRight, ChevronDown, Search, TrendingUp, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
-import { categoryIcons } from "@/components/catalog/category-icons";
+import { CategoryIcon } from "@/components/catalog/CategoryIcon";
 import { ProductVisual } from "@/components/catalog/ProductVisual";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { Product } from "@/lib/catalog-types";
@@ -170,7 +170,6 @@ export function SearchBox({ categories, className }: { categories: SearchCategor
                 <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-ink-500">{t("categories")}</h3>
                 <ul className="grid grid-cols-2 gap-1">
                   {categories.map((c) => {
-                    const Icon = categoryIcons[c.slug];
                     return (
                       <li key={c.slug}>
                         <Link
@@ -179,7 +178,7 @@ export function SearchBox({ categories, className }: { categories: SearchCategor
                           className="flex items-center gap-2 rounded-sm p-1 text-xs font-medium hover:bg-surface"
                         >
                           <span className={cn("inline-flex size-6 shrink-0 items-center justify-center rounded-xs", tintClasses(c.tint).bg, tintClasses(c.tint).fg)}>
-                            <Icon className="size-3.5" aria-hidden />
+                            <CategoryIcon slug={c.slug} className="size-3.5" aria-hidden />
                           </span>
                           <span className="line-clamp-1">{c.name}</span>
                         </Link>

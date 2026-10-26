@@ -33,6 +33,8 @@ model Category {
   /// Colour key for tinted UI surfaces (see src/lib/tints.ts)
   tint     String     @default("brand")
   position Int        @default(0)
+  /// Google Merchant Center product category id (google_product_category), see src/data/google-taxonomy.json
+  googleCategoryId Int?
   parentId Int?
   parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
   children Category[] @relation("CategoryTree")

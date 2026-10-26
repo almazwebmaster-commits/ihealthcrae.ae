@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 type Options = {
   brands: { slug: string; name: string }[];
-  categories: { slug: string; nameEn: string; nameAr: string; children: { slug: string; nameEn: string; nameAr: string }[] }[];
+  categories: { slug: string; nameEn: string; nameAr: string; children: { slug: string; nameEn: string; nameAr: string; googleCategoryId?: number | null }[] }[];
 };
 
 type Initial = ProductInputT & { sku?: string; rating?: number; reviews?: number };
@@ -208,6 +208,7 @@ export function ProductEditor({ initial, options }: { initial?: Initial; options
       <ProductCopyAssistant
         slug={v.slug}
         categories={options.categories}
+        currentCategory={category}
         currentSubcategory={v.subcategory}
         onCategory={(cat, sub) => {
           setCategory(cat);

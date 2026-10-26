@@ -13,7 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import { categoryIcons } from "@/components/catalog/category-icons";
+import { CategoryIcon } from "@/components/catalog/CategoryIcon";
 import { Countdown } from "@/components/catalog/Countdown";
 import { Price } from "@/components/catalog/Price";
 import { ProductCard } from "@/components/catalog/ProductCard";
@@ -157,11 +157,10 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       {/* 2 — Category strip */}
       <nav aria-label={tNav("allCategories")} className="no-scrollbar grid grid-flow-col auto-cols-[6.5rem] gap-3 overflow-x-auto sm:auto-cols-fr">
         {categories.map((c) => {
-          const Icon = categoryIcons[c.slug];
           return (
             <Link key={c.slug} href={`/c/${c.slug}`} className="group flex flex-col items-center gap-2 rounded-sm border border-line bg-white p-3 text-center hover:border-ink-400">
               <span className={cn("inline-flex size-14 items-center justify-center rounded-sm transition-transform group-hover:scale-105", tintClasses(c.tint).bg, tintClasses(c.tint).fg)}>
-                <Icon className="size-7" aria-hidden />
+                <CategoryIcon slug={c.slug} className="size-7" aria-hidden />
               </span>
               <span className="line-clamp-2 text-xs font-semibold leading-4 text-ink-800">{tr(c.name, loc)}</span>
             </Link>

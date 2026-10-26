@@ -1,23 +1,34 @@
 "use client";
 
-import { Check, FolderTree, Info, Sparkles, WandSparkles } from "lucide-react";
+import { Check, Info, Loader2, Plus, RotateCcw, Sparkles } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { suggestCopyAction } from "@/app/[locale]/admin/products/actions";
+import { createCategoryAction, linkGoogleCategoryAction, suggestCopyAction } from "@/app/[locale]/admin/products/actions";
+import { Badge } from "@/components/ui/Badge";
+import { Box } from "@/components/ui/Box";
+import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
+import { useRouter } from "@/i18n/navigation";
+import { googleCategoryPath } from "@/lib/google-taxonomy";
 import { tr } from "@/lib/i18n-utils";
-import type { CopyRequestT, CopySuggestion } from "@/server/ai/product-copy";
 import { cn } from "@/lib/utils";
+import type { CopyRequestT, CopySuggestion } from "@/server/ai/product-copy";
 
 type Field = "nameEn" | "nameAr" | "descEn" | "descAr";
-type Applied = Field | "category";
-const FIELDS: { key: Field; dir: "ltr" | "rtl"; title: boolean }[] = [
-  { key: "nameEn", dir: "ltr", title: true },
-  { key: "nameAr", dir: "rtl", title: true },
-  { key: "descEn", dir: "ltr", title: false },
-  { key: "descAr", dir: "rtl", title: false },
+type Row = Field | "category";
+type Categories = {
+  slug: string;
+  nameEn: string;
+  nameAr: string;
+  children: { slug: string; nameEn: string; nameAr: string; googleCategoryId?: number | null }[];
+}[];
+
+const TEXT_ROWS: { key: Field; dir: "ltr" | "rtl"; limit: number }[] = [
+  { key: "nameEn", dir: "ltr", limit: 70 },
+  { key: "nameAr", dir: "rtl", limit: 70 },
+  { key: "descEn", dir: "ltr", limit: 0 },
+  { key: "descAr", dir: "rtl", limit: 0 },
 ];
-type Categories = { slug: string; nameEn: string; nameAr: string; children: { slug: string; nameEn: string; nameAr: string }[] }[];
 
 /** Google shows roughly this many characters of a title / description. */
 const TITLE_MAX = 70;
@@ -28,34 +39,25 @@ const clip = (s: string, n: number) => {
   return flat.length > n ? `${flat.slice(0, n - 1).trimEnd()}…` : flat;
 };
 
-const gradient = "bg-linear-to-r from-violet-600 via-fuchsia-500 to-indigo-600";
-
-/** Small "use this" button in the AI style. */
-function UseButton({ done, onClick, label, doneLabel }: { done: boolean; onClick: () => void; label: string; doneLabel: string }) {
+/** One "current → suggested" review row. */
+function ReviewRow({ label, meta, children, action }: { label: string; meta?: React.ReactNode; children: React.ReactNode; action: React.ReactNode }) {
   return (
-    <button
-      type="button"
-      disabled={done}
-      onClick={onClick}
-      className={cn(
-        "mt-3 inline-flex h-8 items-center gap-1.5 self-start rounded-sm px-3 text-xs font-bold transition",
-        done ? "bg-success-50 text-success" : "border border-violet-300 bg-white text-violet-700 hover:border-violet-500 hover:bg-violet-50",
-      )}
-    >
-      {done ? <Check className="size-3.5" aria-hidden /> : <WandSparkles className="size-3.5" aria-hidden />}
-      {done ? doneLabel : label}
-    </button>
+    <li className="grid gap-x-5 gap-y-2 border-t border-line py-4 first:border-t-0 md:grid-cols-[9rem_minmax(0,1fr)_8.5rem]">
+      <div>
+        <p className="text-sm font-semibold text-ink-900">{label}</p>
+        {meta && <div className="mt-1 text-xs text-ink-500">{meta}</div>}
+      </div>
+      <div className="min-w-0">{children}</div>
+      <div className="flex items-start md:justify-end">{action}</div>
+    </li>
   );
 }
 
-function Shimmer({ className }: { className?: string }) {
+function Current({ text, dir, empty }: { text: string; dir?: "ltr" | "rtl"; empty: string }) {
   return (
-    <div
-      className={cn(
-        "rounded-xs bg-linear-to-r from-violet-100 via-fuchsia-100 to-violet-100 bg-size-[200%_100%] animate-ai-shimmer motion-reduce:animate-none",
-        className,
-      )}
-    />
+    <p className="mt-2 line-clamp-2 border-s-2 border-line ps-2 text-xs text-ink-500" dir={dir}>
+      {text.trim() ? text : <span className="italic">{empty}</span>}
+    </p>
   );
 }
 
@@ -63,6 +65,7 @@ export function ProductCopyAssistant({
   product,
   slug,
   categories,
+  currentCategory,
   currentSubcategory,
   onApply,
   onCategory,
@@ -70,23 +73,40 @@ export function ProductCopyAssistant({
   product: Omit<CopyRequestT, "instructions">;
   slug: string;
   categories: Categories;
+  currentCategory: string;
   currentSubcategory: string;
   onApply: (field: Field, value: string) => void;
   onCategory: (category: string, subcategory: string) => void;
 }) {
   const t = useTranslations("AdminUI.editor.ai");
   const locale = useLocale();
+  const router = useRouter();
   const [instructions, setInstructions] = useState("");
+  const [showInstructions, setShowInstructions] = useState(false);
   const [suggestion, setSuggestion] = useState<CopySuggestion>();
-  const [applied, setApplied] = useState<Set<Applied>>(new Set());
+  /** Accepted rows → the value they replaced, so each can be undone. */
+  const [accepted, setAccepted] = useState<Partial<Record<Row, string>>>({});
+  const [expanded, setExpanded] = useState<Partial<Record<Field, boolean>>>({});
   const [error, setError] = useState<string>();
   const [pending, start] = useTransition();
+  const [creating, startCreating] = useTransition();
   const canAsk = !!(product.nameEn.trim() || product.nameAr.trim());
 
-  const parent = suggestion && categories.find((c) => c.slug === suggestion.category);
-  const sub = parent?.children.find((s) => s.slug === suggestion?.subcategory);
-  const sameCategory = suggestion?.subcategory === currentSubcategory;
-  const total = FIELDS.length + (sameCategory ? 0 : 1);
+  const name = (n: { nameEn: string; nameAr: string }) => tr({ en: n.nameEn, ar: n.nameAr }, locale);
+  const findSub = (subSlug: string) => {
+    for (const c of categories) {
+      const s = c.children.find((x) => x.slug === subSlug);
+      if (s) return { parent: c, sub: s };
+    }
+  };
+  const current = findSub(currentSubcategory);
+  const cat = suggestion?.category ?? null;
+  const pick = cat?.pick;
+  const pickedExisting = pick?.kind === "existing" ? findSub(pick.subcategory) : undefined;
+  const categoryChanges = !!pick && !(pick.kind === "existing" && pick.subcategory === currentSubcategory);
+  const pendingRows: Row[] = suggestion
+    ? [...(categoryChanges ? (["category"] as const) : []), ...TEXT_ROWS.map((r) => r.key).filter((k) => suggestion[k] !== product[k])].filter((r) => !(r in accepted))
+    : [];
 
   function ask() {
     setError(undefined);
@@ -94,193 +114,257 @@ export function ProductCopyAssistant({
       const res = await suggestCopyAction({ ...product, instructions }).catch(() => ({ ok: false as const, error: "failed" as const }));
       if (!res.ok) return setError(t(`errors.${res.error}`));
       setSuggestion(res.suggestion);
-      setApplied(new Set());
+      setAccepted({});
+      setExpanded({});
     });
   }
 
-  function apply(items: Applied[]) {
+  function acceptText(key: Field) {
     if (!suggestion) return;
-    for (const f of items) {
-      if (f === "category") onCategory(suggestion.category, suggestion.subcategory);
-      else onApply(f, suggestion[f]);
-    }
-    setApplied((s) => new Set([...s, ...items]));
+    setAccepted((a) => ({ ...a, [key]: product[key] }));
+    onApply(key, suggestion[key]);
   }
 
+  function acceptCategory() {
+    if (!cat || !pick) return;
+    const before = `${currentCategory}|${currentSubcategory}`;
+    if (pick.kind === "existing") {
+      setAccepted((a) => ({ ...a, category: before }));
+      onCategory(pick.category, pick.subcategory);
+      if (cat.google && !pickedExisting?.sub.googleCategoryId) linkGoogleCategoryAction(pick.subcategory, cat.google.id).catch(() => {});
+      return;
+    }
+    setError(undefined);
+    startCreating(async () => {
+      try {
+        const res = await createCategoryAction({ parent: pick.parent, nameEn: pick.nameEn, nameAr: pick.nameAr, googleCategoryId: cat.google?.id ?? null });
+        setAccepted((a) => ({ ...a, category: before }));
+        onCategory(res.category, res.subcategory);
+        router.refresh(); // load the new category into the dropdowns
+      } catch {
+        setError(t("errors.createCategory"));
+      }
+    });
+  }
+
+  function undo(row: Row) {
+    const prev = accepted[row];
+    if (prev === undefined) return;
+    if (row === "category") {
+      const [c, s] = prev.split("|");
+      onCategory(c, s);
+    } else onApply(row, prev);
+    setAccepted((a) => {
+      const next = { ...a };
+      delete next[row];
+      return next;
+    });
+  }
+
+  function acceptAll() {
+    for (const r of pendingRows) {
+      if (r === "category") acceptCategory();
+      else acceptText(r);
+    }
+  }
+
+  const actionFor = (row: Row, onAccept: () => void, acceptLabel = t("accept"), busy = false) =>
+    row in accepted ? (
+      <div className="flex flex-col items-start gap-1 md:items-end">
+        <span className="inline-flex items-center gap-1 text-xs font-bold text-success">
+          <Check className="size-3.5" aria-hidden />
+          {t("accepted")}
+        </span>
+        <button type="button" onClick={() => undo(row)} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-600 hover:text-ink-900 hover:underline">
+          <RotateCcw className="size-3" aria-hidden />
+          {t("undo")}
+        </button>
+      </div>
+    ) : (
+      <Button variant="outline" size="sm" disabled={busy} onClick={onAccept}>
+        {busy ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : null}
+        {acceptLabel}
+      </Button>
+    );
+
   return (
-    <section aria-labelledby="ai-title" className={cn("rounded-md p-px shadow-ai", gradient)}>
-      <div className="rounded-[5px] bg-linear-to-br from-violet-50 via-white to-fuchsia-50 p-5">
-        {/* Header */}
-        <div className="flex flex-wrap items-start gap-3">
-          <span className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-md text-white shadow-ai", gradient)}>
-            <Sparkles className="size-5" aria-hidden />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h2 id="ai-title" className="flex flex-wrap items-center gap-2 text-base font-extrabold">
-              <span className="bg-linear-to-r from-violet-700 to-fuchsia-600 bg-clip-text text-transparent">{t("title")}</span>
-              <span className="rounded-xs bg-violet-600 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white">AI</span>
-            </h2>
-            <p className="mt-0.5 max-w-prose text-xs text-ink-600">{t("hint")}</p>
-          </div>
+    <Box role="region" aria-labelledby="ai-title">
+      {/* Header */}
+      <div className="flex flex-wrap items-center gap-3 border-b border-line px-5 py-4">
+        <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm bg-brand-50 text-brand-700">
+          <Sparkles className="size-4.5" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 id="ai-title" className="text-base font-bold">{t("title")}</h2>
+          <p className="text-xs text-ink-500">{t("hint")}</p>
         </div>
+        <Button variant={suggestion ? "outline" : "primary"} className="w-full sm:w-auto" disabled={pending || !canAsk} onClick={ask}>
+          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Sparkles className="size-4" aria-hidden />}
+          {pending ? t("thinking") : suggestion ? t("again") : t("suggest")}
+        </Button>
+      </div>
 
-        {/* How the English listing looks in Google right now */}
-        <div className="mt-4 rounded-sm border border-violet-100 bg-white p-3" dir="ltr">
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-violet-500">{t("preview")}</p>
-          <p className="text-xs text-ink-600">ihealthcare.ae › p › {slug || "…"}</p>
-          <p className="truncate text-base text-[#1a0dab]">{clip(product.nameEn || product.nameAr || "—", TITLE_MAX)} | iHealthcare.ae</p>
-          <p className="line-clamp-2 text-sm text-ink-700">{clip(product.descEn, SNIPPET_MAX) || t("noDescription")}</p>
+      <div className="space-y-4 px-5 py-4">
+        {/* Options */}
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+          {!canAsk ? <p className="text-ink-500">{t("needName")}</p> : <span />}
+          {!showInstructions && (
+            <button type="button" onClick={() => setShowInstructions(true)} className="inline-flex items-center gap-1 font-semibold text-brand-700 hover:underline">
+              <Plus className="size-3.5" aria-hidden />
+              {t("addInstructions")}
+            </button>
+          )}
         </div>
-
-        {/* Prompt */}
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end">
-          <div className="flex-1">
+        {showInstructions && (
+          <div>
             <Label htmlFor="ai-instructions">{t("instructions")}</Label>
-            <Input
-              id="ai-instructions"
-              className="border-violet-200 focus:border-violet-500"
-              placeholder={t("instructionsPlaceholder")}
-              value={instructions}
-              maxLength={500}
-              onChange={(e) => setInstructions(e.target.value)}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={ask}
-            disabled={pending || !canAsk}
-            className={cn(
-              "inline-flex h-10 items-center justify-center gap-2 rounded-sm px-5 text-sm font-bold text-white shadow-ai transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none",
-              gradient,
-            )}
-          >
-            <Sparkles className={cn("size-4", pending && "animate-pulse")} aria-hidden />
-            {pending ? t("thinking") : suggestion ? t("again") : t("suggest")}
-          </button>
-        </div>
-        {!canAsk && <p className="mt-1 text-xs text-ink-500">{t("needName")}</p>}
-        {error && <p role="alert" className="mt-3 rounded-sm bg-sale-50 px-3 py-2 text-xs text-sale">{error}</p>}
-
-        {/* Writing… placeholder */}
-        {pending && (
-          <div className="mt-5 grid gap-4 md:grid-cols-2" aria-hidden>
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="space-y-2 rounded-sm border border-violet-100 bg-white p-3">
-                <Shimmer className="h-3 w-24" />
-                <Shimmer className="h-4 w-full" />
-                <Shimmer className="h-4 w-4/5" />
-                {i > 1 && <Shimmer className="h-4 w-2/3" />}
-              </div>
-            ))}
+            <Input id="ai-instructions" placeholder={t("instructionsPlaceholder")} value={instructions} maxLength={500} onChange={(e) => setInstructions(e.target.value)} autoFocus />
           </div>
         )}
 
-        {suggestion && !pending && (
-          <div className="mt-5 space-y-4 border-t border-violet-100 pt-4" aria-live="polite">
-            {/* Category */}
-            <div className="flex flex-col rounded-sm border border-violet-200 bg-white p-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-violet-800">
-                  <FolderTree className="size-3.5" aria-hidden />
-                  {t("categoryTitle")}
-                </span>
-                <span
-                  className={cn(
-                    "rounded-xs px-1.5 py-0.5 text-[11px] font-bold",
-                    suggestion.categoryConfidence === "high" && "bg-success-50 text-success",
-                    suggestion.categoryConfidence === "medium" && "bg-accent-50 text-accent-700",
-                    suggestion.categoryConfidence === "low" && "bg-surface text-ink-600",
-                  )}
-                >
-                  {t(`confidence.${suggestion.categoryConfidence}`)}
-                </span>
-              </div>
-              <p className="mt-1.5 text-sm font-semibold">
-                {parent && tr({ en: parent.nameEn, ar: parent.nameAr }, locale)}
-                <span className="mx-1.5 text-violet-400">›</span>
-                {sub && tr({ en: sub.nameEn, ar: sub.nameAr }, locale)}
-              </p>
-              <p className="mt-1 text-xs text-ink-600">{locale === "ar" ? suggestion.categoryReasonAr : suggestion.categoryReasonEn}</p>
-              {sameCategory ? (
-                <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-success">
-                  <Check className="size-3.5" aria-hidden />
-                  {t("categorySame")}
-                </p>
-              ) : (
-                <UseButton done={applied.has("category")} onClick={() => apply(["category"])} label={t("use")} doneLabel={t("used")} />
-              )}
-            </div>
+        {error && <p role="alert" className="rounded-sm bg-sale-50 px-3 py-2 text-xs text-sale">{error}</p>}
 
-            {/* Titles and descriptions */}
-            <div className="grid gap-4 md:grid-cols-2">
-              {FIELDS.map(({ key, dir, title }) => {
-                const text = suggestion[key];
-                const long = title && text.length > TITLE_MAX + 10;
-                return (
-                  <div key={key} className="flex flex-col rounded-sm border border-violet-200 bg-white p-3">
-                    <div className="mb-1.5 flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-violet-800">
-                        <Sparkles className="size-3" aria-hidden />
-                        {t(`field.${key}`)}
+        {/* Loading skeleton in the shape of the results */}
+        {pending && (
+          <ul aria-hidden className="animate-pulse motion-reduce:animate-none">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <li key={i} className="grid gap-5 border-t border-line py-4 first:border-t-0 md:grid-cols-[9rem_minmax(0,1fr)_8.5rem]">
+                <div className="h-3.5 w-20 rounded-xs bg-surface" />
+                <div className="space-y-2">
+                  <div className="h-3.5 w-11/12 rounded-xs bg-surface" />
+                  {i > 2 && <div className="h-3.5 w-3/4 rounded-xs bg-surface" />}
+                </div>
+                <div className="h-8 w-20 rounded-sm bg-surface md:justify-self-end" />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {suggestion && !pending && (
+          <div aria-live="polite">
+            <ul>
+              {/* Category */}
+              {cat && pick && (
+                <ReviewRow
+                  label={t("categoryTitle")}
+                  meta={<Badge tone={cat.confidence === "high" ? "success" : cat.confidence === "medium" ? "info" : "neutral"}>{t(`confidence.${cat.confidence}`)}</Badge>}
+                  action={
+                    categoryChanges ? actionFor("category", acceptCategory, pick.kind === "new" ? t("createAndUse") : t("accept"), creating) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                        <Check className="size-3.5" aria-hidden />
+                        {t("categorySame")}
                       </span>
-                      <span className={cn("text-[11px]", long ? "font-semibold text-sale" : "text-ink-500")}>{t("chars", { count: text.length })}</span>
-                    </div>
-                    <p dir={dir} lang={dir === "rtl" ? "ar" : "en"} className={cn("flex-1 whitespace-pre-line text-sm leading-6", title && "font-semibold")}>
+                    )
+                  }
+                >
+                  <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm font-semibold">
+                    {pick.kind === "existing" && pickedExisting ? (
+                      <>
+                        {name(pickedExisting.parent)}
+                        <span className="text-ink-400">›</span>
+                        {name(pickedExisting.sub)}
+                      </>
+                    ) : pick.kind === "new" ? (
+                      <>
+                        {"slug" in pick.parent ? name(categories.find((c) => c.slug === (pick.parent as { slug: string }).slug) ?? { nameEn: "", nameAr: "" }) : name(pick.parent)}
+                        {!("slug" in pick.parent) && <Badge tone="brand">{t("new")}</Badge>}
+                        <span className="text-ink-400">›</span>
+                        {name(pick)}
+                        <Badge tone="brand">{t("new")}</Badge>
+                      </>
+                    ) : null}
+                  </p>
+                  <p className="mt-1 text-xs text-ink-600">{locale === "ar" ? cat.reasonAr : cat.reasonEn}</p>
+                  {cat.google && (
+                    <p className="mt-1.5 text-xs text-ink-600" dir="ltr">
+                      <span className="font-semibold">{t("googleCategory")}</span> {cat.google.path} <span className="text-ink-400">#{cat.google.id}</span>
+                    </p>
+                  )}
+                  <Current
+                    empty={t("none")}
+                    text={current ? `${name(current.parent)} › ${name(current.sub)}${current.sub.googleCategoryId ? ` · Google: ${googleCategoryPath(current.sub.googleCategoryId)?.split(" > ").at(-1)}` : ""}` : ""}
+                  />
+                </ReviewRow>
+              )}
+
+              {/* Titles and descriptions */}
+              {TEXT_ROWS.map(({ key, dir, limit }) => {
+                const text = suggestion[key];
+                const unchanged = text === product[key] && !(key in accepted);
+                const isDesc = !limit;
+                return (
+                  <ReviewRow
+                    key={key}
+                    label={t(`field.${key}`)}
+                    meta={
+                      limit ? (
+                        <span className={cn(text.length > limit + 10 && "font-semibold text-sale")}>{t("charsOf", { count: text.length, limit })}</span>
+                      ) : (
+                        t("words", { count: text.split(/\s+/).filter(Boolean).length })
+                      )
+                    }
+                    action={unchanged ? <span className="text-xs text-ink-500">{t("noChange")}</span> : actionFor(key, () => acceptText(key))}
+                  >
+                    <p
+                      dir={dir}
+                      lang={dir === "rtl" ? "ar" : "en"}
+                      className={cn("whitespace-pre-line text-sm leading-6 text-ink-900", !isDesc && "font-semibold", isDesc && !expanded[key] && "line-clamp-4")}
+                    >
                       {text}
                     </p>
-                    <UseButton done={applied.has(key)} onClick={() => apply([key])} label={t("use")} doneLabel={t("used")} />
-                  </div>
+                    {isDesc && (
+                      <button type="button" onClick={() => setExpanded((e) => ({ ...e, [key]: !e[key] }))} className="mt-1 text-xs font-semibold text-brand-700 hover:underline">
+                        {expanded[key] ? t("showLess") : t("showMore")}
+                      </button>
+                    )}
+                    {!unchanged && <Current text={key in accepted ? (accepted[key] ?? "") : product[key]} dir={dir} empty={t("none")} />}
+                  </ReviewRow>
                 );
               })}
-            </div>
+            </ul>
 
-            {/* Search phrases */}
-            <div className="grid gap-3 text-xs md:grid-cols-2">
+            {/* Extras */}
+            <div className="mt-2 grid gap-4 border-t border-line pt-4 text-xs md:grid-cols-2">
               {[suggestion.keywordsEn, suggestion.keywordsAr].map((kw, i) => (
                 <div key={i}>
-                  <p className="mb-1 font-semibold text-ink-700">{t(i ? "keywordsAr" : "keywordsEn")}</p>
+                  <p className="mb-1.5 font-semibold text-ink-700">{t(i ? "keywordsAr" : "keywordsEn")}</p>
                   <ul className="flex flex-wrap gap-1.5" dir={i ? "rtl" : "ltr"}>
                     {kw.map((k) => (
-                      <li key={k} className="rounded-xs border border-violet-200 bg-violet-50 px-2 py-0.5 text-violet-800">{k}</li>
+                      <li key={k} className="rounded-xs border border-line bg-surface px-2 py-0.5 text-ink-700">{k}</li>
                     ))}
                   </ul>
                 </div>
               ))}
             </div>
-
             {suggestion.missing.length > 0 && (
-              <div className="flex gap-2 rounded-sm border border-violet-200 bg-violet-50 px-3 py-2 text-xs text-ink-800">
-                <Info className="mt-0.5 size-3.5 shrink-0 text-violet-600" aria-hidden />
-                <div>
-                  <p className="font-semibold">{t("missing")}</p>
-                  <p className="mt-0.5">{suggestion.missing.join(" · ")}</p>
-                </div>
-              </div>
+              <p className="mt-4 flex gap-2 rounded-sm bg-accent-50 px-3 py-2 text-xs text-ink-800">
+                <Info className="mt-0.5 size-3.5 shrink-0 text-accent-700" aria-hidden />
+                <span>
+                  <span className="font-semibold">{t("missing")}</span> {suggestion.missing.join(" · ")}
+                </span>
+              </p>
             )}
 
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                disabled={applied.size >= total}
-                onClick={() => apply([...FIELDS.map((f) => f.key), ...(sameCategory ? [] : (["category"] as const))])}
-                className={cn("inline-flex h-9 items-center gap-1.5 rounded-sm px-4 text-sm font-bold text-white shadow-ai transition hover:brightness-110 disabled:opacity-50 disabled:shadow-none", gradient)}
-              >
-                <WandSparkles className="size-4" aria-hidden />
-                {t("useAll")}
-              </button>
-              <button type="button" onClick={() => setSuggestion(undefined)} className="h-9 rounded-sm px-3 text-sm font-semibold text-ink-600 hover:bg-violet-50">
-                {t("discard")}
-              </button>
+            <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-line pt-4">
+              <Button variant="primary" size="sm" disabled={!pendingRows.length || creating} onClick={acceptAll}>
+                {t("acceptAll")}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setSuggestion(undefined)}>{t("discard")}</Button>
               <p className="text-xs text-ink-500">{t("reviewNote")}</p>
             </div>
           </div>
         )}
 
-        <p className="mt-4 flex items-center gap-1.5 text-[11px] text-ink-500">
-          <Sparkles className="size-3 text-violet-400" aria-hidden />
-          {t("disclaimer")}
-        </p>
+        {/* Live search preview of the form as it stands */}
+        <div className="rounded-sm border border-line p-3" dir="ltr">
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-ink-500">{t("preview")}</p>
+          <p className="text-xs text-ink-600">ihealthcare.ae › p › {slug || "…"}</p>
+          <p className="truncate text-base text-[#1a0dab]">{clip(product.nameEn || product.nameAr || "—", TITLE_MAX)} | iHealthcare.ae</p>
+          <p className="line-clamp-2 text-sm text-ink-700">{clip(product.descEn, SNIPPET_MAX) || t("noDescription")}</p>
+        </div>
+
+        <p className="text-[11px] text-ink-500">{t("disclaimer")}</p>
       </div>
-    </section>
+    </Box>
   );
 }

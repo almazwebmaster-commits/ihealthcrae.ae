@@ -4,7 +4,7 @@ import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import { useEffect, useRef, useState } from "react";
-import { categoryIcons } from "@/components/catalog/category-icons";
+import { CategoryIcon } from "@/components/catalog/CategoryIcon";
 import { buttonClass } from "@/components/ui/Button";
 import type { HeroTheme } from "@/data/home";
 import { Link } from "@/i18n/navigation";
@@ -109,7 +109,6 @@ export function HeroCarousel({
       >
         {slides.map((s, i) => {
           const th = themes[s.theme];
-          const Icon = categoryIcons[s.category];
           const desktop = rtl ? s.desktopImageRtl : s.desktopImage;
           return (
             <div
@@ -163,7 +162,7 @@ export function HeroCarousel({
                         k === 4 ? th.dot : k % 2 ? `${th.tile} opacity-20` : `${th.tile} opacity-10`,
                       )}
                     >
-                      {k === 4 && <Icon className="size-12 text-white" strokeWidth={1.5} />}
+                      {k === 4 && <CategoryIcon slug={s.category} className="size-12 text-white" strokeWidth={1.5} />}
                     </span>
                   ))}
                 </div>

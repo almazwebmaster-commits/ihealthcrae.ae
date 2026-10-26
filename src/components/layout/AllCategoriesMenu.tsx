@@ -2,7 +2,7 @@
 
 import { ChevronDown, Menu } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { categoryIcons } from "@/components/catalog/category-icons";
+import { CategoryIcon } from "@/components/catalog/CategoryIcon";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +63,6 @@ export function AllCategoriesMenu({
         >
           <div className="container-site grid grid-cols-4 gap-x-6 gap-y-6 py-6 xl:grid-cols-7">
             {categories.map((c) => {
-              const Icon = categoryIcons[c.slug];
               return (
                 <div key={c.slug}>
                   <Link
@@ -72,7 +71,7 @@ export function AllCategoriesMenu({
                     className="group mb-2 flex items-center gap-2"
                   >
                     <span className={cn("inline-flex size-8 items-center justify-center rounded-sm", c.tint.bg, c.tint.fg)}>
-                      <Icon className="size-4" aria-hidden />
+                      <CategoryIcon slug={c.slug} className="size-4" aria-hidden />
                     </span>
                     <span className="text-sm font-bold group-hover:text-brand-700">{c.name}</span>
                   </Link>
