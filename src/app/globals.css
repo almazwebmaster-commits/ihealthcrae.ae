@@ -72,6 +72,14 @@
   --shadow-pop: 0 8px 24px -8px rgb(14 27 44 / 0.18);
 
   --container-site: 1440px;
+
+  /* AI features — violet accent, kept separate from the teal brand */
+  --shadow-ai: 0 6px 20px -6px rgb(124 58 237 / 0.45);
+  --animate-ai-shimmer: ai-shimmer 1.6s linear infinite;
+  @keyframes ai-shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
 }
 
 @layer base {

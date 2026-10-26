@@ -564,15 +564,15 @@
         "uploadUnreadable": "This file couldn't be read as an image."
       },
       "ai": {
-        "title": "AI suggestions for search (SEO)",
-        "hint": "Suggests a clearer title and description in English and Arabic, written for Google and UAE shoppers. It only uses the details on this page — check facts before saving.",
+        "title": "AI assistant",
+        "hint": "Suggests the best category and a clearer title and description in English and Arabic, written for Google and UAE shoppers. It only uses the details on this page.",
         "preview": "Google preview",
         "noDescription": "No description yet — Google will pick text from the page.",
         "instructions": "Notes for the AI (optional)",
         "instructionsPlaceholder": "e.g. mention it's fragrance-free, aimed at new mums",
-        "suggest": "Suggest title & description",
+        "suggest": "Generate with AI",
         "again": "Suggest again",
-        "thinking": "Writing…",
+        "thinking": "AI is writing…",
         "needName": "Enter a product name first.",
         "field": {
           "nameEn": "Title (English)",
@@ -583,7 +583,7 @@
         "chars": "{count} characters",
         "use": "Use this",
         "used": "Applied",
-        "useAll": "Use all four",
+        "useAll": "Use all suggestions",
         "discard": "Discard",
         "reviewNote": "Applied text goes into the fields above — nothing is saved until you press Save.",
         "keywordsEn": "Search phrases (English)",
@@ -595,7 +595,15 @@
           "refused": "The AI couldn't write copy for this product. Please write it manually.",
           "busy": "The AI service is busy. Please try again in a minute.",
           "failed": "Couldn't get suggestions. Please try again."
-        }
+        },
+        "categoryTitle": "Suggested category",
+        "categorySame": "Matches the current category",
+        "confidence": {
+          "high": "Strong match",
+          "medium": "Likely match",
+          "low": "Unsure — check"
+        },
+        "disclaimer": "AI can make mistakes. Review facts before saving."
       }
     },
     "importer": {

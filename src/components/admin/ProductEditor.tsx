@@ -207,6 +207,12 @@ export function ProductEditor({ initial, options }: { initial?: Initial; options
 
       <ProductCopyAssistant
         slug={v.slug}
+        categories={options.categories}
+        currentSubcategory={v.subcategory}
+        onCategory={(cat, sub) => {
+          setCategory(cat);
+          set("subcategory", sub);
+        }}
         product={{
           nameEn: v.nameEn,
           nameAr: v.nameAr,
