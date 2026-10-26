@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { ProductStatus, SaveProductResult } from "@/lib/admin/product-input";
 import { staffActor } from "@/server/admin/guard";
+import { suggestProductCopy, type CopyResult } from "@/server/ai/product-copy";
 import { importProductsCsv, saveProduct, setProductStatus, type ImportResult } from "@/server/admin/products";
 
 // Catalogue edits affect many store pages (listings, home, product page) — refresh them all.
@@ -19,6 +20,12 @@ export async function setProductStatusAction(id: number, status: ProductStatus) 
   const actor = await staffActor();
   await setProductStatus(actor, id, status);
   refreshStore();
+}
+
+/** AI-suggested SEO titles and descriptions; nothing is saved until staff apply and save. */
+export async function suggestCopyAction(input: unknown): Promise<CopyResult> {
+  await staffActor();
+  return suggestProductCopy(input);
 }
 
 export async function importProductsAction(_prev: ImportResult | null, form: FormData): Promise<ImportResult> {

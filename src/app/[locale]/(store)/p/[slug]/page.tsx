@@ -23,7 +23,15 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/p/[slug]
   const { locale, slug } = await params;
   const p = await getProduct(slug);
   if (!p) return {};
-  return { title: tr(p.name, locale), description: tr(p.desc, locale) };
+  return { title: tr(p.name, locale), description: snippet(tr(p.desc, locale)) };
+}
+
+/** Search engines show ~160 characters; cut at a word boundary. */
+function snippet(text: string, max = 160) {
+  const flat = text.replace(/\s+/g, " ").trim();
+  if (flat.length <= max) return flat;
+  const cut = flat.slice(0, max - 1);
+  return `${cut.slice(0, cut.lastIndexOf(" ") > 100 ? cut.lastIndexOf(" ") : cut.length)}…`;
 }
 
 /** Rating distribution derived from the average (mock until real reviews in Phase 6). */
@@ -98,7 +106,7 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/p/[sl
             {product.tiers && <Badge tone="accent">{t("buyMoreSaveMore")}</Badge>}
           </div>
           <hr className="border-line" />
-          <p className="text-sm leading-6 text-ink-800">{tr(product.desc, locale)}</p>
+          <p className="whitespace-pre-line text-sm leading-6 text-ink-800">{tr(product.desc, locale)}</p>
           <div>
             <h2 className="mb-2 text-sm font-bold">{t("highlights")}</h2>
             <ul className="space-y-1.5 text-sm text-ink-800">

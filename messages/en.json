@@ -562,6 +562,40 @@
         "uploadType": "Only JPG, PNG, WebP or AVIF images.",
         "uploadSize": "Each photo must be under 10 MB.",
         "uploadUnreadable": "This file couldn't be read as an image."
+      },
+      "ai": {
+        "title": "AI suggestions for search (SEO)",
+        "hint": "Suggests a clearer title and description in English and Arabic, written for Google and UAE shoppers. It only uses the details on this page — check facts before saving.",
+        "preview": "Google preview",
+        "noDescription": "No description yet — Google will pick text from the page.",
+        "instructions": "Notes for the AI (optional)",
+        "instructionsPlaceholder": "e.g. mention it's fragrance-free, aimed at new mums",
+        "suggest": "Suggest title & description",
+        "again": "Suggest again",
+        "thinking": "Writing…",
+        "needName": "Enter a product name first.",
+        "field": {
+          "nameEn": "Title (English)",
+          "nameAr": "Title (Arabic)",
+          "descEn": "Description (English)",
+          "descAr": "Description (Arabic)"
+        },
+        "chars": "{count} characters",
+        "use": "Use this",
+        "used": "Applied",
+        "useAll": "Use all four",
+        "discard": "Discard",
+        "reviewNote": "Applied text goes into the fields above — nothing is saved until you press Save.",
+        "keywordsEn": "Search phrases (English)",
+        "keywordsAr": "Search phrases (Arabic)",
+        "missing": "Adding these details would improve the copy:",
+        "errors": {
+          "notConfigured": "AI suggestions aren't set up yet — add ANTHROPIC_API_KEY to the server settings.",
+          "invalid": "Enter at least a product name first.",
+          "refused": "The AI couldn't write copy for this product. Please write it manually.",
+          "busy": "The AI service is busy. Please try again in a minute.",
+          "failed": "Couldn't get suggestions. Please try again."
+        }
       }
     },
     "importer": {

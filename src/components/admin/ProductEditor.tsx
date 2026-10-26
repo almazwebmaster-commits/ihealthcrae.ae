@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState, useTransition } from "react";
 import { saveProductAction, setProductStatusAction } from "@/app/[locale]/admin/products/actions";
+import { ProductCopyAssistant } from "@/components/admin/ProductCopyAssistant";
 import { FormMessage } from "@/components/auth/AuthCard";
 import { Box } from "@/components/ui/Box";
 import { Button, buttonClass } from "@/components/ui/Button";
@@ -195,14 +196,37 @@ export function ProductEditor({ initial, options }: { initial?: Initial; options
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <Label htmlFor="descEn">{t("descEn")}</Label>
-            <textarea id="descEn" dir="ltr" rows={5} className={area} value={v.descEn} onChange={(e) => set("descEn", e.target.value)} />
+            <textarea id="descEn" dir="ltr" rows={8} className={area} value={v.descEn} onChange={(e) => set("descEn", e.target.value)} />
           </div>
           <div>
             <Label htmlFor="descAr">{t("descAr")}</Label>
-            <textarea id="descAr" dir="rtl" lang="ar" rows={5} className={area} value={v.descAr} onChange={(e) => set("descAr", e.target.value)} />
+            <textarea id="descAr" dir="rtl" lang="ar" rows={8} className={area} value={v.descAr} onChange={(e) => set("descAr", e.target.value)} />
           </div>
         </div>
       </Section>
+
+      <ProductCopyAssistant
+        slug={v.slug}
+        product={{
+          nameEn: v.nameEn,
+          nameAr: v.nameAr,
+          descEn: v.descEn,
+          descAr: v.descAr,
+          brand: v.newBrand || options.brands.find((b) => b.slug === v.brandSlug)?.name || "",
+          category: options.categories.find((c) => c.slug === category)?.nameEn ?? "",
+          subcategory: subs.find((s) => s.slug === v.subcategory)?.nameEn ?? "",
+          options: v.variants.map((o) => o.labelEn).filter(Boolean),
+          price: Number.isFinite(num(price)) ? num(price) : null,
+        }}
+        onApply={(field, value) =>
+          setV((s) => ({
+            ...s,
+            [field]: value,
+            // New products keep their URL in step with the title; live products keep theirs.
+            ...(field === "nameEn" && !slugTouched ? { slug: slugify(value) } : {}),
+          }))
+        }
+      />
 
       <Section title={t("organisation")}>
         <div className="grid gap-4 md:grid-cols-3">
