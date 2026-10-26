@@ -561,7 +561,8 @@
         "generic": "Please fix the highlighted fields.",
         "uploadType": "Only JPG, PNG, WebP or AVIF images.",
         "uploadSize": "Each photo must be under 10 MB.",
-        "uploadUnreadable": "This file couldn't be read as an image."
+        "uploadUnreadable": "This file couldn't be read as an image.",
+        "tooLong": "Too long — please shorten it."
       },
       "ai": {
         "title": "AI assistant",
@@ -585,14 +586,15 @@
         "reviewNote": "Nothing is saved until you press Save product.",
         "keywordsEn": "Search phrases (English)",
         "keywordsAr": "Search phrases (Arabic)",
-        "missing": "Missing details:",
+        "missing": "Missing or conflicting details:",
         "errors": {
           "notConfigured": "AI suggestions aren't set up yet — add GEMINI_API_KEY (free at aistudio.google.com) to the server settings.",
-          "invalid": "Enter at least a product name first.",
+          "invalid": "Some product details couldn't be read. Please check the form and try again.",
           "refused": "The AI couldn't write copy for this product. Please write it manually.",
           "busy": "The AI service is busy. Please try again in a minute.",
           "failed": "Couldn't get suggestions. Please try again.",
-          "createCategory": "Couldn't create the category. Please try again."
+          "createCategory": "Couldn't create the category. Please try again.",
+          "needName": "Enter a product name first."
         },
         "categoryTitle": "Category",
         "categorySame": "Already correct",
@@ -617,7 +619,9 @@
         "showMore": "Show more",
         "showLess": "Show less",
         "slugRedirect": "The old address will redirect to the new one automatically, so existing links and Google rankings are kept."
-      }
+      },
+      "nameLength": "{count} / {max} characters",
+      "nameTooLong": "Use the AI assistant below to shorten it."
     },
     "importer": {
       "title": "Import products from CSV",

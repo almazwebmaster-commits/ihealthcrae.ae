@@ -42,6 +42,21 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
 
 const num = (s: string) => (s.trim() === "" ? NaN : Number(s));
 
+const NAME_MAX = 200;
+
+/** Character count for product names; appears as a name gets long, turns red past the limit. */
+function NameLength({ text }: { text: string }) {
+  const t = useTranslations("AdminUI.editor");
+  if (text.length <= 120) return null;
+  const over = text.length > NAME_MAX;
+  return (
+    <p className={cn("mt-1 text-xs", over ? "font-semibold text-sale" : "text-ink-500")}>
+      {t("nameLength", { count: text.length, max: NAME_MAX })}
+      {over && ` ${t("nameTooLong")}`}
+    </p>
+  );
+}
+
 export function ProductEditor({ initial, options }: { initial?: Initial; options: Options }) {
   const t = useTranslations("AdminUI.editor");
   const tStatus = useTranslations("AdminUI.products.status");
@@ -148,12 +163,12 @@ export function ProductEditor({ initial, options }: { initial?: Initial; options
                 setV((s) => ({ ...s, nameEn, slug: slugTouched ? s.slug : slugify(nameEn) }));
               }}
             />
-            {err("nameEn")}
+            {err("nameEn") ?? <NameLength text={v.nameEn} />}
           </div>
           <div>
             <Label htmlFor="nameAr">{t("nameAr")}</Label>
             <Input id="nameAr" dir="rtl" lang="ar" value={v.nameAr} aria-invalid={!!errors.nameAr} onChange={(e) => set("nameAr", e.target.value)} />
-            {err("nameAr")}
+            {err("nameAr") ?? <NameLength text={v.nameAr} />}
           </div>
           <div>
             <Label htmlFor="slug">{t("slug")}</Label>

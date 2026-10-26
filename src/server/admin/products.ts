@@ -94,12 +94,12 @@ export async function getEditorOptions() {
 
 const KNOWN_ERRORS = new Set(["slug", "taken", "compareAt", "tiers", "required"]);
 
-/** Zod issues → { field: translation key } (unknown messages fall back to "required"). */
-function zodErrors(error: { issues: { path: PropertyKey[]; message: string }[] }) {
+/** Zod issues → { field: translation key } (over-long text → "tooLong", other unknown issues → "required"). */
+function zodErrors(error: { issues: { path: PropertyKey[]; message: string; code: string; origin?: string }[] }) {
   const errors: Record<string, string> = {};
   for (const i of error.issues) {
     const key = i.path.map(String).join(".") || "form";
-    errors[key] ??= KNOWN_ERRORS.has(i.message) ? i.message : "required";
+    errors[key] ??= KNOWN_ERRORS.has(i.message) ? i.message : i.code === "too_big" && i.origin === "string" ? "tooLong" : "required";
   }
   return errors;
 }
