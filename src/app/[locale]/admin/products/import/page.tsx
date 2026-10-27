@@ -5,6 +5,7 @@ import { AdminHeader } from "@/components/admin/ui";
 import { Box } from "@/components/ui/Box";
 import { Link } from "@/i18n/navigation";
 import { CSV_COLUMNS } from "@/server/admin/products";
+import { requireArea } from "@/server/admin/guard";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/products/import">): Promise<Metadata> {
   const t = await getTranslations({ locale: (await params).locale, namespace: "AdminUI.importer" });
@@ -12,6 +13,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/pr
 }
 
 export default async function ImportPage({ params }: PageProps<"/[locale]/admin/products/import">) {
+  await requireArea("products");
   setRequestLocale((await params).locale);
   const t = await getTranslations("AdminUI.importer");
   return (

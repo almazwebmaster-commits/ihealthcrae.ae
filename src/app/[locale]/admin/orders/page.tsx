@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/i18n-utils";
 import { orderStatuses, type OrderStatus } from "@/lib/orders";
 import { cn } from "@/lib/utils";
 import { listOrders } from "@/server/admin/orders";
+import { requireArea } from "@/server/admin/guard";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/orders">): Promise<Metadata> {
   const t = await getTranslations({ locale: (await params).locale, namespace: "AdminUI.orders" });
@@ -17,6 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/or
 const str = (v: string | string[] | undefined) => (typeof v === "string" ? v : undefined);
 
 export default async function AdminOrders({ params, searchParams }: PageProps<"/[locale]/admin/orders">) {
+  await requireArea("orders");
   setRequestLocale((await params).locale);
   const locale = await getLocale();
   const sp = await searchParams;

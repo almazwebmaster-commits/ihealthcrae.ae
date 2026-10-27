@@ -8,6 +8,9 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Link } from "@/i18n/navigation";
 import { openStatuses } from "@/lib/orders";
 import { db } from "@/server/db";
+import { notFound } from "next/navigation";
+import { adminSections, canOpen } from "@/lib/admin-sections";
+import { currentStaff } from "@/server/admin/guard";
 import { requireStaff } from "@/server/session";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -19,7 +22,10 @@ export default async function AdminLayout({ children, params }: LayoutProps<"/[l
   const { user } = await requireStaff(locale, "/admin");
   const t = await getTranslations("AdminUI.nav");
   const tTop = await getTranslations("TopBar");
-  const openOrders = await db.order.count({ where: { status: { in: openStatuses } } });
+  const staff = await currentStaff();
+  if (!staff) notFound();
+  const allowed = [...adminSections, "staff" as const].filter((a) => canOpen(staff, a));
+  const openOrders = allowed.includes("orders") ? await db.order.count({ where: { status: { in: openStatuses } } }) : 0;
 
   return (
     <div className="flex min-h-screen flex-col bg-surface lg:flex-row">
@@ -33,7 +39,7 @@ export default async function AdminLayout({ children, params }: LayoutProps<"/[l
           </Link>
         </div>
         <div className="px-2 pb-2 lg:flex-1">
-          <AdminNav labels={{ dashboard: t("dashboard"), orders: t("orders"), customers: t("customers"), products: t("products"), inventory: t("inventory"), promotions: t("promotions") }} openOrders={openOrders} />
+          <AdminNav labels={{ dashboard: t("dashboard"), orders: t("orders"), customers: t("customers"), products: t("products"), inventory: t("inventory"), promotions: t("promotions"), homepage: t("homepage"), staff: t("staff") }} openOrders={openOrders} allowed={allowed} />
         </div>
         <div className="hidden space-y-2 border-t border-white/10 p-4 text-xs text-ink-300 lg:block">
           <p className="truncate font-semibold text-white">{user.name}</p>

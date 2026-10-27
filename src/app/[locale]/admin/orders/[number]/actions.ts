@@ -8,20 +8,20 @@ import { addOrderNote, changeOrderStatus, markOrderPaid } from "@/server/admin/o
 const refresh = () => revalidatePath("/[locale]/admin", "layout");
 
 export async function changeStatusAction(number: string, status: string, note: string) {
-  const actor = await staffActor();
+  const actor = await staffActor("orders");
   if (!orderStatuses.includes(status as OrderStatus)) throw new Error("Invalid status");
   await changeOrderStatus(actor, number, status as OrderStatus, note);
   refresh();
 }
 
 export async function markPaidAction(number: string) {
-  const actor = await staffActor();
+  const actor = await staffActor("orders");
   await markOrderPaid(actor, number);
   refresh();
 }
 
 export async function addNoteAction(number: string, note: string) {
-  const actor = await staffActor();
+  const actor = await staffActor("orders");
   await addOrderNote(actor, number, note);
   refresh();
 }

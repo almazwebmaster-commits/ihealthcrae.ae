@@ -13,6 +13,7 @@ import { emirateName } from "@/lib/emirates";
 import type { OrderStatus } from "@/lib/orders";
 import { formatUaePhone } from "@/lib/phone";
 import { getOrder } from "@/server/admin/orders";
+import { requireArea } from "@/server/admin/guard";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/orders/[number]">): Promise<Metadata> {
   const { locale, number } = await params;
@@ -21,6 +22,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/or
 }
 
 export default async function AdminOrderPage({ params }: PageProps<"/[locale]/admin/orders/[number]">) {
+  await requireArea("orders");
   const { locale: loc, number } = await params;
   setRequestLocale(loc);
   const order = await getOrder(number);

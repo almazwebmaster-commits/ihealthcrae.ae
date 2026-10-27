@@ -10,6 +10,7 @@ import { tr } from "@/lib/i18n-utils";
 import { stockState } from "@/lib/inventory";
 import { cn } from "@/lib/utils";
 import { productMovements } from "@/server/inventory";
+import { requireArea } from "@/server/admin/guard";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/inventory/[id]">): Promise<Metadata> {
   const t = await getTranslations({ locale: (await params).locale, namespace: "AdminUI.inventory" });
@@ -17,6 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/in
 }
 
 export default async function StockHistoryPage({ params }: PageProps<"/[locale]/admin/inventory/[id]">) {
+  await requireArea("inventory");
   const { locale: loc, id } = await params;
   setRequestLocale(loc);
   const data = Number.isInteger(Number(id)) ? await productMovements(Number(id)) : null;

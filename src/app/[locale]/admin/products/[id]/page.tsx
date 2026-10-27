@@ -5,6 +5,7 @@ import { ProductEditor } from "@/components/admin/ProductEditor";
 import { AdminHeader, ProductStatusBadge } from "@/components/admin/ui";
 import { tr } from "@/lib/i18n-utils";
 import { getEditorOptions, getProductForEdit } from "@/server/admin/products";
+import { requireArea } from "@/server/admin/guard";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/products/[id]">): Promise<Metadata> {
   const t = await getTranslations({ locale: (await params).locale, namespace: "AdminUI.editor" });
@@ -12,6 +13,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/pr
 }
 
 export default async function EditProductPage({ params }: PageProps<"/[locale]/admin/products/[id]">) {
+  await requireArea("products");
   const { locale, id } = await params;
   setRequestLocale(locale);
   const productId = Number(id);

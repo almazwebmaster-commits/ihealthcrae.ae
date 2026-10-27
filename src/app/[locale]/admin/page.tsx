@@ -8,6 +8,8 @@ import { formatPrice, tr } from "@/lib/i18n-utils";
 import type { OrderStatus } from "@/lib/orders";
 import { cn } from "@/lib/utils";
 import { recentActivity } from "@/server/admin/audit";
+import { adminSections, canOpen } from "@/lib/admin-sections";
+import { currentStaff } from "@/server/admin/guard";
 import { dashboardStats } from "@/server/admin/orders";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin">): Promise<Metadata> {
@@ -19,6 +21,22 @@ export default async function AdminDashboard({ params }: PageProps<"/[locale]/ad
   setRequestLocale((await params).locale);
   const locale = await getLocale();
   const t = await getTranslations("AdminUI.dashboard");
+  const staff = await currentStaff();
+  if (!canOpen(staff, "dashboard")) {
+    // Staff without dashboard access get a simple start page with their sections.
+    const tNav = await getTranslations("AdminUI.nav");
+    const areas = adminSections.filter((a) => a !== "dashboard" && canOpen(staff, a));
+    return (
+      <div className="space-y-4">
+        <AdminHeader title={t("welcome", { name: staff?.name ?? "" })} subtitle={areas.length ? t("yourSections") : t("noSections")} />
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {areas.map((a) => (
+            <Link key={a} href={`/admin/${a}`} className="rounded-sm border border-line bg-white p-4 font-semibold hover:border-ink-400">{tNav(a)} →</Link>
+          ))}
+        </div>
+      </div>
+    );
+  }
   const tStatus = await getTranslations("OrderStatus");
   const [s, activity] = await Promise.all([dashboardStats(), recentActivity()]);
   const fmt = (n: number) => formatPrice(n, locale);

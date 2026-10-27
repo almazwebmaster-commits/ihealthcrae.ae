@@ -446,7 +446,9 @@
       "admin": "Admin",
       "promotions": "Promotions",
       "inventory": "Inventory",
-      "customers": "Customers"
+      "customers": "Customers",
+      "homepage": "Homepage",
+      "staff": "Staff"
     },
     "dashboard": {
       "title": "Dashboard",
@@ -462,7 +464,10 @@
       "left": "{count} left",
       "activity": "Recent activity",
       "noActivity": "No staff activity yet.",
-      "demoNotice": "Includes demo orders for testing. Remove them with: npm run db:demo-orders -- --clear"
+      "demoNotice": "Includes demo orders for testing. Remove them with: npm run db:demo-orders -- --clear",
+      "welcome": "Welcome, {name}",
+      "yourSections": "These are the sections you can work in.",
+      "noSections": "You haven't been given access to any section yet. Ask an admin."
     },
     "products": {
       "title": "Products",
@@ -1002,6 +1007,43 @@
       "errors": {
         "notCustomer": "Staff accounts can't be blocked here.",
         "notFound": "Customer not found."
+      }
+    },
+    "staff": {
+      "title": "Staff",
+      "subtitle": "Who can use the admin, and which sections each person can open.",
+      "you": "you",
+      "allAccess": "All sections",
+      "noAccess": "No sections",
+      "lastActive": "Active {date}",
+      "neverActive": "Not signed in yet",
+      "edit": "Edit",
+      "close": "Close",
+      "save": "Save access",
+      "remove": "Remove staff access",
+      "confirmRemove": "Remove admin access for {name}? Their customer account stays.",
+      "role": "Role",
+      "roles": {
+        "staff": "Staff",
+        "admin": "Admin"
+      },
+      "roleHint": {
+        "staff": "Opens only the sections ticked below",
+        "admin": "Every section, plus managing staff"
+      },
+      "ownRole": "You can't change your own role — ask another admin.",
+      "sections": "Sections",
+      "addTitle": "Add a staff member",
+      "addHint": "They first create an account on the website with their work email, then you add that email here.",
+      "email": "Their account email",
+      "add": "Add staff member",
+      "added": "{email} can now use the admin.",
+      "errors": {
+        "notFound": "No account with that email. Ask them to register on the website first.",
+        "alreadyStaff": "That account is already staff.",
+        "self": "You can't do that to your own account — ask another admin.",
+        "lastAdmin": "There must be at least one admin.",
+        "invalid": "Check the role and sections."
       }
     }
   },

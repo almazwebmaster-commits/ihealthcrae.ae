@@ -1,6 +1,6 @@
 "use client";
 
-import { Boxes, LayoutDashboard, Package, ShoppingBag, Tag, Users } from "lucide-react";
+import { Boxes, LayoutDashboard, LayoutTemplate, Package, ShieldCheck, ShoppingBag, Tag, Users } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -11,13 +11,16 @@ const ITEMS = [
   { href: "/admin/products", icon: Package, key: "products" },
   { href: "/admin/inventory", icon: Boxes, key: "inventory" },
   { href: "/admin/promotions", icon: Tag, key: "promotions" },
+  { href: "/admin/homepage", icon: LayoutTemplate, key: "homepage" },
+  { href: "/admin/staff", icon: ShieldCheck, key: "staff" },
 ] as const;
 
-export function AdminNav({ labels, openOrders }: { labels: Record<string, string>; openOrders: number }) {
+/** Sidebar; `allowed` is the list of areas the signed-in staff member may open. */
+export function AdminNav({ labels, openOrders, allowed }: { labels: Record<string, string>; openOrders: number; allowed: string[] }) {
   const pathname = usePathname();
   return (
     <nav className="no-scrollbar flex overflow-x-auto lg:flex-col lg:gap-0.5">
-      {ITEMS.map(({ href, icon: Icon, key }) => {
+      {ITEMS.filter((i) => allowed.includes(i.key)).map(({ href, icon: Icon, key }) => {
         const active = href === "/admin" ? pathname === href : pathname.startsWith(href);
         return (
           <Link

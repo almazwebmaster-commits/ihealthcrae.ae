@@ -11,39 +11,39 @@ import { importProductsCsv, saveProduct, setProductStatus, type ImportResult } f
 const refreshStore = () => revalidatePath("/", "layout");
 
 export async function saveProductAction(input: unknown): Promise<SaveProductResult> {
-  const actor = await staffActor();
+  const actor = await staffActor("products");
   const result = await saveProduct(actor, input);
   if (result.ok) refreshStore();
   return result;
 }
 
 export async function setProductStatusAction(id: number, status: ProductStatus) {
-  const actor = await staffActor();
+  const actor = await staffActor("products");
   await setProductStatus(actor, id, status);
   refreshStore();
 }
 
 /** AI-suggested SEO titles and descriptions; nothing is saved until staff apply and save. */
 export async function suggestCopyAction(input: unknown): Promise<CopyResult> {
-  await staffActor();
+  await staffActor("products");
   return suggestProductCopy(input);
 }
 
 /** Creates a (sub)category proposed by the AI assistant; returns the slugs to select. */
 export async function createCategoryAction(input: unknown) {
-  const actor = await staffActor();
+  const actor = await staffActor("products");
   const result = await createCategory(actor, input);
   refreshStore();
   return result;
 }
 
 export async function linkGoogleCategoryAction(slug: string, googleCategoryId: number) {
-  const actor = await staffActor();
+  const actor = await staffActor("products");
   await linkGoogleCategory(actor, slug, googleCategoryId);
 }
 
 export async function importProductsAction(_prev: ImportResult | null, form: FormData): Promise<ImportResult> {
-  const actor = await staffActor();
+  const actor = await staffActor("products");
   const file = form.get("file");
   const apply = form.get("mode") === "apply";
   if (!(file instanceof File) || file.size === 0) return { created: 0, updated: 0, applied: false, errors: [{ row: 0, message: "No file" }] };

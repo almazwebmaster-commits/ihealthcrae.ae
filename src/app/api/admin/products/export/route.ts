@@ -4,7 +4,7 @@ import { exportProductsCsv } from "@/server/admin/products";
 
 export async function GET() {
   try {
-    await staffActor();
+    await staffActor("products");
   } catch {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }

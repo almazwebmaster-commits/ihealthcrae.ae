@@ -9,6 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { formatPrice, tr } from "@/lib/i18n-utils";
 import { couponStatus, type CouponStatus } from "@/lib/promotions";
 import { listCoupons, listFlashDeals } from "@/server/promotions";
+import { requireArea } from "@/server/admin/guard";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/promotions">): Promise<Metadata> {
   const t = await getTranslations({ locale: (await params).locale, namespace: "AdminUI.promotions" });
@@ -18,6 +19,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/pr
 const statusTone: Record<CouponStatus, "success" | "info" | "neutral" | "sale"> = { active: "success", scheduled: "info", expired: "neutral", usedUp: "neutral", disabled: "sale" };
 
 export default async function PromotionsPage({ params }: PageProps<"/[locale]/admin/promotions">) {
+  await requireArea("promotions");
   setRequestLocale((await params).locale);
   const locale = await getLocale();
   const t = await getTranslations("AdminUI.promotions");

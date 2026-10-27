@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { formatPrice, tr } from "@/lib/i18n-utils";
 import { cn } from "@/lib/utils";
 import { getEditorOptions, listProducts } from "@/server/admin/products";
+import { requireArea } from "@/server/admin/guard";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/products">): Promise<Metadata> {
   const t = await getTranslations({ locale: (await params).locale, namespace: "AdminUI.products" });
@@ -17,6 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/pr
 const str = (v: string | string[] | undefined) => (typeof v === "string" ? v : undefined);
 
 export default async function AdminProducts({ params, searchParams }: PageProps<"/[locale]/admin/products">) {
+  await requireArea("products");
   setRequestLocale((await params).locale);
   const locale = await getLocale();
   const sp = await searchParams;

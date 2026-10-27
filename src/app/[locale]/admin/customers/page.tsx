@@ -9,6 +9,7 @@ import { formatPrice } from "@/lib/i18n-utils";
 import { formatUaePhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 import { listCustomers, listGuests } from "@/server/admin/customers";
+import { requireArea } from "@/server/admin/guard";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/customers">): Promise<Metadata> {
   const t = await getTranslations({ locale: (await params).locale, namespace: "AdminUI.customers" });
@@ -19,6 +20,7 @@ const str = (v: string | string[] | undefined) => (typeof v === "string" ? v : u
 const TABS = ["accounts", "blocked", "guests"] as const;
 
 export default async function CustomersPage({ params, searchParams }: PageProps<"/[locale]/admin/customers">) {
+  await requireArea("customers");
   setRequestLocale((await params).locale);
   const locale = await getLocale();
   const sp = await searchParams;

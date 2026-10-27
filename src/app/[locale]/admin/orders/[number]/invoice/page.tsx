@@ -7,6 +7,7 @@ import { OrderItemsTable } from "@/components/orders/OrderItemsTable";
 import { emirateName } from "@/lib/emirates";
 import { formatUaePhone } from "@/lib/phone";
 import { getOrder } from "@/server/admin/orders";
+import { requireArea } from "@/server/admin/guard";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/orders/[number]/invoice">): Promise<Metadata> {
   const { locale, number } = await params;
@@ -16,6 +17,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/or
 
 /** Printable tax invoice (the admin shell is hidden when printing). */
 export default async function InvoicePage({ params }: PageProps<"/[locale]/admin/orders/[number]/invoice">) {
+  await requireArea("orders");
   const { locale: loc, number } = await params;
   setRequestLocale(loc);
   const order = await getOrder(number);

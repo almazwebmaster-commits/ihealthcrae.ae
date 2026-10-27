@@ -10,6 +10,7 @@ import type { OrderStatus } from "@/lib/orders";
 import { couponStatus } from "@/lib/promotions";
 import { toUaeInput } from "@/lib/uae-time";
 import { getCoupon } from "@/server/promotions";
+import { requireArea } from "@/server/admin/guard";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/promotions/[id]">): Promise<Metadata> {
   const t = await getTranslations({ locale: (await params).locale, namespace: "AdminUI.promotions" });
@@ -19,6 +20,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/pr
 const n = (d: unknown) => (d == null ? "" : String(Number(d)));
 
 export default async function EditCouponPage({ params }: PageProps<"/[locale]/admin/promotions/[id]">) {
+  await requireArea("promotions");
   const { locale: loc, id } = await params;
   setRequestLocale(loc);
   const coupon = Number.isInteger(Number(id)) ? await getCoupon(Number(id)) : null;

@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { formatNumber, formatPrice } from "@/lib/i18n-utils";
 import { cn } from "@/lib/utils";
 import { inventorySummary, listInventory, stockFilters, type StockFilter } from "@/server/inventory";
+import { requireArea } from "@/server/admin/guard";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/inventory">): Promise<Metadata> {
   const t = await getTranslations({ locale: (await params).locale, namespace: "AdminUI.inventory" });
@@ -17,6 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/in
 const str = (v: string | string[] | undefined) => (typeof v === "string" ? v : undefined);
 
 export default async function InventoryPage({ params, searchParams }: PageProps<"/[locale]/admin/inventory">) {
+  await requireArea("inventory");
   setRequestLocale((await params).locale);
   const locale = await getLocale();
   const sp = await searchParams;

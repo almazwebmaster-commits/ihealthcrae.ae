@@ -8,6 +8,7 @@ import { formatPrice, tr } from "@/lib/i18n-utils";
 import { formatUaePhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 import { getOrder } from "@/server/admin/orders";
+import { requireArea } from "@/server/admin/guard";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/orders/[number]/packing-slip">): Promise<Metadata> {
   const { locale, number } = await params;
@@ -17,6 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/or
 
 /** Printable picking / packing sheet for the warehouse: no prices except cash to collect. */
 export default async function PackingSlipPage({ params }: PageProps<"/[locale]/admin/orders/[number]/packing-slip">) {
+  await requireArea("orders");
   const { locale: loc, number } = await params;
   setRequestLocale(loc);
   const order = await getOrder(number);

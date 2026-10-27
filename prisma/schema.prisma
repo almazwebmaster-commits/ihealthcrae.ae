@@ -175,6 +175,8 @@ model User {
   image         String?
   /// Admin plugin: "user" (customer), "staff" or "admin"
   role          String    @default("user")
+  /// Admin sections a "staff" user may open (admins can open everything), see src/lib/admin-sections.ts
+  permissions   String[]  @default([])
   banned        Boolean?  @default(false)
   banReason     String?
   banExpires    DateTime?

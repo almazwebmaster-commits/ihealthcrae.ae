@@ -7,7 +7,7 @@ import { ACCEPTED_TYPES, MAX_UPLOAD_BYTES, saveProductPhoto } from "@/server/adm
 export async function POST(req: NextRequest) {
   let actor;
   try {
-    actor = await staffActor();
+    actor = await staffActor("products");
   } catch {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
