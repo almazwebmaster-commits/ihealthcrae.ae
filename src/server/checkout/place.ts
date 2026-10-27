@@ -1,11 +1,10 @@
 import "server-only";
 import { z } from "zod";
-import type { Prisma } from "@/generated/prisma/client";
 import { emirateSlugs } from "@/lib/emirates";
 import { orderNumber } from "@/lib/orders";
 import { normalizeUaePhone } from "@/lib/phone";
 import { deliveryMethods, FREE_DELIVERY_THRESHOLD, STANDARD_DELIVERY_FEE } from "@/lib/store-settings";
-import { db } from "../db";
+import { db, type Tx } from "../db";
 import { orderConfirmationMail } from "../email-templates";
 import { sendMail } from "../mail";
 import type { Session } from "../auth";
@@ -57,7 +56,6 @@ class StockError extends Error {
   }
 }
 
-type Tx = Prisma.TransactionClient;
 
 /** Decrements stock only if enough is left (atomic per product) and logs it against the order. */
 async function takeStock(tx: Tx, orderId: number, items: { productId: number | null; slug: string; qty: number }[]) {

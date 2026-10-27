@@ -1,12 +1,10 @@
 import "server-only";
 import { z } from "zod";
-import type { Prisma } from "@/generated/prisma/client";
 import { CODE_RE, couponAmount, couponTypes, flashLive, normalizeCode, type CouponError, type CouponRule } from "@/lib/promotions";
 import { fromUaeInput } from "@/lib/uae-time";
 import { audit, type Actor } from "./admin/audit";
-import { db } from "./db";
+import { db, type Tx } from "./db";
 
-type Tx = Prisma.TransactionClient;
 
 export type CouponCheck =
   | { ok: true; coupon: CouponRule & { id: number; descriptionEn: string; descriptionAr: string } }

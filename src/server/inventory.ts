@@ -2,9 +2,8 @@ import "server-only";
 import { z } from "zod";
 import type { Prisma, StockReason } from "@/generated/prisma/client";
 import { audit, type Actor } from "./admin/audit";
-import { db } from "./db";
+import { db, type Tx } from "./db";
 
-type Tx = Prisma.TransactionClient;
 
 /** Logs a stock change that has just been applied to the product (balance = stock afterwards). */
 export async function recordMovement(

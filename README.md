@@ -42,17 +42,34 @@ Optional offline database: `npm run db:start` runs a local Prisma Dev Postgres �
 
 ## Admin portal
 
-`/en/admin` (staff/admin roles only — customers get 404):
+`/en/admin` (staff and admins only — everyone else gets 404). Admins open every section; staff open only
+the sections an admin ticked for them on **Staff** (`src/lib/admin-sections.ts`). Every admin page, server
+action and admin API checks the section on the server.
 
-- **Dashboard** — today's orders, 7-day revenue, orders to fulfil, COD to collect, low stock, recent activity.
-- **Products** — search/filter, create & edit (EN/AR, brand, category, price/was-price, stock, options,
-  labels, Subscribe & save, multi-buy tiers), photo upload (auto white-square packshots), archive/restore,
-  CSV export and import (check first, then apply; rows matched by `slug`).
-  **AI suggestions for SEO** (Claude, `src/server/ai/product-copy.ts`): suggests EN/AR titles, descriptions and
-  search phrases from the product's own details, with a Google preview; staff review and apply, then save.
-  Uses the free Gemini tier when `GEMINI_API_KEY` is set (aistudio.google.com), otherwise Claude via `ANTHROPIC_API_KEY`.
+- **Dashboard** — today's orders, orders to fulfil, COD to collect, low stock; sales for 7 / 30 / 90 days
+  (revenue, orders, average order value, units vs the previous period), revenue-per-day chart, card vs COD,
+  top products; recent activity.
 - **Orders** — status tabs, search, detail with timeline, status changes (allowed steps only; COD is marked
-  paid on delivery; cancelling restocks), internal notes, printable tax invoice.
+  paid on delivery; cancelling restocks and returns any promo-code use), internal notes, printable tax
+  invoice and packing slip.
+- **Customers** — accounts with orders / total spent, guest checkouts grouped by email, customer page
+  (orders, subscriptions, addresses), block / unblock (signs them out everywhere).
+- **Products** — search/filter, create & edit (EN/AR, brand, category, price/was-price, stock, low-stock
+  alert, options, labels, Subscribe & save, multi-buy tiers, **flash deal**), photo upload (auto white-square
+  packshots), archive/restore, CSV export and import (check first, then apply; rows matched by `slug`).
+  **AI assistant** (`src/server/ai/product-copy.ts`): suggests category (matched to Google Merchant
+  categories, can create new ones), web address, EN/AR titles and descriptions; staff accept row by row.
+  Uses the free Gemini tier when `GEMINI_API_KEY` is set (aistudio.google.com), otherwise Claude via
+  `ANTHROPIC_API_KEY`. Changing a product's web address keeps the old one working (permanent redirect).
+- **Google feed** (Products › Google feed) — `/feeds/google/en.xml` and `/feeds/google/ar.xml` for Google
+  Merchant Center; lists what to fix per product. Set `SITE_URL` to the live address in production.
+- **Inventory** — stock value, low / out of stock, quick adjustments (goods received, stock count, return,
+  damaged) and a full stock history per product (orders, cancellations, edits, imports — with who did it).
+- **Promotions** — promo codes (% off with optional cap, fixed amount, free delivery; minimum spend,
+  dates, total and per-customer limits) and live / scheduled flash deals.
+- **Homepage** — reorder and hide sections, hero banners (EN/AR text, link, colour, desktop / Arabic /
+  mobile images, auto-cropped), category boxes, spotlight products and the promo tile; publish or reset.
+- **Staff** (admins only) — add a registered account as staff or admin, choose their sections, remove access.
 - Every staff change is written to `AuditLog`.
 
 Demo orders for testing: `npm run db:demo-orders` (remove with `npm run db:demo-orders -- --clear`).
