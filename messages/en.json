@@ -496,7 +496,8 @@
         "ARCHIVED": "Archived"
       },
       "previous": "Previous",
-      "next": "Next"
+      "next": "Next",
+      "googleFeed": "Google feed"
     },
     "editor": {
       "newTitle": "New product",
@@ -1169,6 +1170,36 @@
         "uploadType": "Only JPG, PNG, WebP or AVIF images.",
         "uploadSize": "Images must be under 10 MB."
       }
+    },
+    "feed": {
+      "title": "Google Merchant feed",
+      "subtitle": "Your product list for Google Shopping, updated automatically from the catalogue.",
+      "back": "Products",
+      "inFeed": "Products in the feed",
+      "offers": "{count, plural, one {# offer} other {# offers}} (each size/option counts)",
+      "ready": "Ready for Google",
+      "needAttention": "Need attention",
+      "urls": "Feed addresses",
+      "open": "Open",
+      "localNote": "These addresses use your local computer. Set SITE_URL to your live address (e.g. https://ihealthcare.ae) on the server so Google can reach the feed.",
+      "step1": "In Google Merchant Center, go to Products → Add products → Add products from a file → Enter a link to your file.",
+      "step2": "Paste the English address (country: United Arab Emirates, language: English). Add the Arabic address as a second feed for Arabic.",
+      "step3": "Choose a daily fetch. Prices, stock, sale prices and flash deals update in the feed automatically.",
+      "problems": "Products that need attention",
+      "allGood": "Every live product meets Google's main requirements.",
+      "fix": "Fix",
+      "col": {
+        "product": "Product",
+        "problems": "What to fix"
+      },
+      "problem": {
+        "noImage": "No photo — left out",
+        "noGoogleCategory": "No Google category",
+        "longTitle": "Title over 150 characters",
+        "shortDescription": "Short description",
+        "noArabic": "Arabic missing"
+      },
+      "legend": "Products without a photo are left out of the feed. The others are included but may perform better once fixed. Products don't have barcodes (GTIN) yet, so they're sent with “identifier exists: no”."
     }
   },
   "Checkout": {

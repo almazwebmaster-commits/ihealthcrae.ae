@@ -1,4 +1,4 @@
-import { Download, Plus, Upload } from "lucide-react";
+import { Download, Plus, Rss, Upload } from "lucide-react";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
@@ -39,6 +39,10 @@ export default async function AdminProducts({ params, searchParams }: PageProps<
               <Download className="size-4" aria-hidden />
               {t("export")}
             </a>
+            <Link href="/admin/products/feed" className={buttonClass("outline", "md")}>
+              <Rss className="size-4" aria-hidden />
+              {t("googleFeed")}
+            </Link>
             <Link href="/admin/products/import" className={buttonClass("outline", "md")}>
               <Upload className="size-4" aria-hidden />
               {t("import")}
