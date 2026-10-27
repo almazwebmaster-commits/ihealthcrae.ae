@@ -556,3 +556,13 @@ model StockMovement {
   @@index([createdAt])
 }
 
+// ── Site content edited in the admin (homepage layout, banners …)
+
+model SiteContent {
+  /// e.g. "home"
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+}
+

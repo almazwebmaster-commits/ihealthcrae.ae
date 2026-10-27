@@ -30,3 +30,18 @@ export async function saveProductPhoto(input: Buffer) {
   await writeFile(join(DIR, name), out);
   return { url: `/uploads/products/${name}`, width: SIZE, height: SIZE };
 }
+
+const BANNER_DIR = join(process.cwd(), "public", "uploads", "banners");
+
+/** Homepage banner: cropped to the exact slot size (keeps the most eye-catching area), WebP. */
+export async function saveBannerImage(input: Buffer, size: { width: number; height: number }) {
+  const out = await sharp(input, { failOn: "error" })
+    .rotate()
+    .resize(size.width, size.height, { fit: "cover", position: sharp.strategy.attention })
+    .webp({ quality: 82 })
+    .toBuffer();
+  const name = `${createHash("sha256").update(out).digest("hex").slice(0, 16)}.webp`;
+  await mkdir(BANNER_DIR, { recursive: true });
+  await writeFile(join(BANNER_DIR, name), out);
+  return { src: `/uploads/banners/${name}`, width: size.width, height: size.height };
+}

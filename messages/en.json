@@ -1045,6 +1045,130 @@
         "lastAdmin": "There must be at least one admin.",
         "invalid": "Check the role and sections."
       }
+    },
+    "homepage": {
+      "title": "Homepage",
+      "subtitle": "Banners, section order and what each box shows — no code needed.",
+      "layout": "Page layout",
+      "layoutHint": "Drag order with the arrows; switch a section off to hide it.",
+      "sections": {
+        "hero": {
+          "name": "Hero banners",
+          "hint": "Rotating banners plus the New arrivals and Best sellers tiles"
+        },
+        "categories": {
+          "name": "Category strip",
+          "hint": "Icons for every top-level category"
+        },
+        "savings": {
+          "name": "Savings programmes",
+          "hint": "Subscribe & save and Buy more, save more"
+        },
+        "mosaic1": {
+          "name": "Category boxes — row 1",
+          "hint": "3 category boxes and the cash-on-delivery promo"
+        },
+        "deals": {
+          "name": "Deals of the day",
+          "hint": "Products on sale, with a countdown"
+        },
+        "bento": {
+          "name": "Promo tile & spotlights",
+          "hint": "Big promo tile and 4 featured products"
+        },
+        "bestSellers": {
+          "name": "Best sellers",
+          "hint": "Products labelled Best seller"
+        },
+        "brands": {
+          "name": "Brands",
+          "hint": "Brand wall"
+        },
+        "mosaic2": {
+          "name": "Category boxes — row 2",
+          "hint": "4 category boxes"
+        },
+        "newArrivals": {
+          "name": "New arrivals",
+          "hint": "Products labelled New"
+        },
+        "trust": {
+          "name": "Trust strip",
+          "hint": "Genuine, fast delivery, COD, secure, returns"
+        }
+      },
+      "shown": "Shown",
+      "hidden": "Hidden",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "banners": "Hero banners",
+      "bannersHint": "Shown in this order and rotate every 6 seconds. Click a banner to edit it.",
+      "bannerCount": "{shown} of {total} shown",
+      "addBanner": "Add banner",
+      "banner": {
+        "titleEn": "Title (English)",
+        "titleAr": "Title (Arabic)",
+        "subtitleEn": "Subtitle (English)",
+        "subtitleAr": "Subtitle (Arabic)",
+        "ctaEn": "Button (English)",
+        "ctaAr": "Button (Arabic)",
+        "pctHint": "Tip: write '{pct}' in a title to show the category's best current discount, e.g. “up to '{pct}'% off”.",
+        "link": "Link",
+        "category": "Category (icon and '{pct}')",
+        "theme": "Colour",
+        "desktop": "Desktop image",
+        "desktopHint": "Cropped to 1568 × 672.",
+        "desktopRtl": "Desktop image (Arabic)",
+        "desktopRtlHint": "Mirror-friendly version for Arabic; falls back to the desktop image.",
+        "mobile": "Mobile image",
+        "mobileHint": "Cropped to 1080 × 1350.",
+        "noImageHint": "Without images the banner shows its colour with the text and category icon.",
+        "delete": "Delete banner"
+      },
+      "themes": {
+        "teal": "Teal",
+        "rose": "Rose",
+        "ink": "Navy",
+        "amber": "Amber"
+      },
+      "upload": "Upload",
+      "replace": "Replace",
+      "removeImage": "Remove",
+      "noImage": "No image",
+      "none": "None",
+      "boxes": "Category boxes",
+      "boxesHint": "Each box shows the 4 best in-stock products of the chosen category.",
+      "row1": "Row 1 (next to the cash-on-delivery promo)",
+      "row2": "Row 2",
+      "box": "Box {n}",
+      "bento": "Promo tile & spotlights",
+      "bentoHint": "The large promo tile and the 4 spotlight products beside it.",
+      "promo": {
+        "eyebrowEn": "Small heading (English)",
+        "eyebrowAr": "Small heading (Arabic)",
+        "titleEn": "Title (English)",
+        "titleAr": "Title (Arabic)",
+        "category": "Category for '{pct}'"
+      },
+      "spotlights": "Spotlight products",
+      "spotlight": "Spotlight {n}",
+      "unavailable": "{slug} (not available)",
+      "unsaved": "You have unsaved changes.",
+      "defaults": "Showing the original homepage.",
+      "lastSaved": "Last saved {date} by {name}",
+      "reset": "Reset to original",
+      "confirmReset": "Go back to the original homepage? Your banners and layout changes will be removed.",
+      "viewHomepage": "View homepage",
+      "save": "Publish changes",
+      "saving": "Publishing…",
+      "saved": "Homepage updated. Changes are live.",
+      "errors": {
+        "generic": "Some fields need attention: {fields}",
+        "noBanner": "Show at least one banner (or hide the Hero banners section).",
+        "upload": "That image couldn't be uploaded.",
+        "uploadType": "Only JPG, PNG, WebP or AVIF images.",
+        "uploadSize": "Images must be under 10 MB."
+      }
     }
   },
   "Checkout": {

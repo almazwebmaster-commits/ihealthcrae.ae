@@ -15,7 +15,7 @@ export type HeroSlide = {
   slot: string;
 };
 
-// Homepage banners — managed from the admin portal's CMS in Phase 5.
+// Original homepage banners: the defaults for Admin › Homepage until staff publish their own (src/lib/home-content.ts).
 export const heroSlides: HeroSlide[] = [
   {
     id: "vitamins",

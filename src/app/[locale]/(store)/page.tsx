@@ -23,33 +23,19 @@ import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { QuadBox } from "@/components/home/QuadBox";
 import { Box } from "@/components/ui/Box";
 import { buttonClass } from "@/components/ui/Button";
-import { heroSlides } from "@/data/home";
 import { Link } from "@/i18n/navigation";
 import type { Product } from "@/lib/catalog-types";
 import { tr } from "@/lib/i18n-utils";
-import { slotImage } from "@/lib/images";
+import type { HomeSectionKey } from "@/lib/home-content";
 import { tintClasses } from "@/lib/tints";
 import { cn } from "@/lib/utils";
+import { Fragment } from "react";
 import { featuredBrands, getCategories, getProduct, maxDiscount, topProducts } from "@/server/catalog";
+import { getHomeContent } from "@/server/home-content";
 
 // Homepage content comes from the database; re-render at most every 5 minutes.
 export const revalidate = 300;
 
-const QUAD_CATEGORIES = [
-  "vitamins-supplements",
-  "beauty-skincare",
-  "mother-baby",
-  "medical-devices",
-  "sports-nutrition",
-  "personal-care",
-  "health-medicine",
-];
-const SPOTLIGHTS = [
-  ["vms-wrist-blood-pressure-monitor", "medical-devices"],
-  ["on-gold-standard-whey", "sports-nutrition"],
-  ["oral-b-io-series-5", "personal-care"],
-  ["dettol-first-aid-kit", "health-medicine"],
-] as const;
 
 function SpotlightTile({ product, label, locale }: { product?: Product; label: string; locale: string }) {
   if (!product) return null;
@@ -78,48 +64,54 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const tc = await getTranslations("Common");
   const tNav = await getTranslations("Nav");
 
-  const [categories, quadLists, deals, bestSellers, newArrivals, brands, heroPcts, skincarePct, spotlightList] =
+  // Layout, banners, category boxes and spotlights are edited in Admin > Homepage.
+  const home = await getHomeContent();
+  const heroSlides = home.heroSlides.filter((s) => s.enabled);
+  const quadCategories = [...new Set([...home.quadRow1, ...home.quadRow2])];
+  const pct = (slug: string) => (slug ? maxDiscount(slug) : Promise.resolve(0));
+
+  const [categories, quadLists, deals, bestSellers, newArrivals, brands, heroPcts, promoPct, spotlightList] =
     await Promise.all([
       getCategories(),
-      Promise.all(QUAD_CATEGORIES.map((slug) => topProducts({ category: slug, inStock: true }, 4))),
+      Promise.all(quadCategories.map((slug) => topProducts({ category: slug, inStock: true }, 4))),
       topProducts({ tag: "deal", sort: "discount", inStock: true }, 12),
       topProducts({ tag: "bestseller", inStock: true }, 12),
       topProducts({ tag: "new", sort: "newest", inStock: true }, 12),
       featuredBrands(16),
-      Promise.all(heroSlides.map((s) => maxDiscount(s.category))),
-      maxDiscount("beauty-skincare"),
-      Promise.all(SPOTLIGHTS.map(([slug]) => getProduct(slug))),
+      Promise.all(heroSlides.map((s) => pct(s.category))),
+      pct(home.promo.category),
+      Promise.all(home.spotlights.map((slug) => (slug ? getProduct(slug) : undefined))),
     ]);
 
   const rail = { prevLabel: tc("previous"), nextLabel: tc("next"), viewAllLabel: tc("viewAll") };
   const catName = new Map(categories.map((c) => [c.slug, tr(c.name, loc)]));
   const cat = (slug: string) => catName.get(slug) ?? slug;
-  const quadProducts = new Map(QUAD_CATEGORIES.map((slug, i) => [slug, quadLists[i]]));
+  const quadProducts = new Map(quadCategories.map((slug, i) => [slug, quadLists[i]]));
   const quad = (slug: string) => ({
     title: cat(slug),
     href: `/c/${slug}`,
     linkLabel: t("shopAll"),
     products: quadProducts.get(slug) ?? [],
   });
-  const spotlights = new Map(SPOTLIGHTS.map(([slug], i) => [slug, spotlightList[i]]));
+  const ar = loc === "ar";
+  const withPct = (text: string, n: number) => text.replace("{pct}", String(n));
 
-  return (
-    <div className="container-site space-y-4 py-4">
-      {/* 1 — Hero mosaic */}
+  const blocks: Record<HomeSectionKey, React.ReactNode> = {
+    hero: (
       <section className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:grid-rows-2">
         <div className="min-w-0 lg:col-span-8 lg:row-span-2">
           <HeroCarousel
             slides={heroSlides.map((s, i) => ({
               id: s.id,
-              title: tr(s.title, loc).replace("{pct}", String(heroPcts[i])),
-              subtitle: tr(s.subtitle, loc),
-              cta: tr(s.cta, loc),
+              title: withPct(ar ? s.titleAr : s.titleEn, heroPcts[i]),
+              subtitle: ar ? s.subtitleAr : s.subtitleEn,
+              cta: ar ? s.ctaAr : s.ctaEn,
               href: s.href,
               theme: s.theme,
               category: s.category,
-              desktopImage: slotImage(`${s.slot}-D`),
-              desktopImageRtl: slotImage(`${s.slot}-DR`),
-              mobileImage: slotImage(`${s.slot}-M`),
+              desktopImage: s.desktop ?? undefined,
+              desktopImageRtl: s.desktopRtl ?? undefined,
+              mobileImage: s.mobile ?? undefined,
             }))}
             prevLabel={tc("previous")}
             nextLabel={tc("next")}
@@ -153,8 +145,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           <ArrowRight className="flip-rtl ms-auto size-5 shrink-0" aria-hidden />
         </Link>
       </section>
+    ),
 
-      {/* 2 — Category strip */}
+    categories: (
       <nav aria-label={tNav("allCategories")} className="no-scrollbar grid grid-flow-col auto-cols-[6.5rem] gap-3 overflow-x-auto sm:auto-cols-fr">
         {categories.map((c) => {
           return (
@@ -173,8 +166,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           <span className="text-xs font-bold leading-4 text-ink-900">{tNav("offers")}</span>
         </Link>
       </nav>
+    ),
 
-      {/* Savings programmes */}
+    savings: (
       <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <Link
           href="/subscribe-and-save"
@@ -205,11 +199,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           <ArrowRight className="flip-rtl ms-auto size-5 shrink-0 text-accent-700 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" aria-hidden />
         </Link>
       </section>
+    ),
 
-      {/* 3 — Mosaic row: quad boxes + promo */}
+    mosaic1: (
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <QuadBox {...quad("vitamins-supplements")} />
-        <QuadBox {...quad("beauty-skincare")} />
+        <QuadBox {...quad(home.quadRow1[0])} />
+        <QuadBox {...quad(home.quadRow1[1])} />
         <div className="flex flex-col justify-between gap-6 rounded-sm bg-brand-700 p-6 text-white">
           <div className="space-y-3">
             <span className="inline-flex size-12 items-center justify-center rounded-sm bg-accent-500 text-ink-900">
@@ -228,10 +223,11 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             <ArrowRight className="flip-rtl size-4" aria-hidden />
           </Link>
         </div>
-        <QuadBox {...quad("mother-baby")} />
+        <QuadBox {...quad(home.quadRow1[2])} />
       </section>
+    ),
 
-      {/* 4 — Deals of the day */}
+    deals: (
       <ProductRail
         title={
           <span className="inline-flex items-center gap-2">
@@ -247,11 +243,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           <ProductCard key={p.slug} product={p} />
         ))}
       </ProductRail>
+    ),
 
-      {/* 5 — Bento: big promo + spotlights */}
+    bento: (
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2">
         <Link
-          href="/c/beauty-skincare?sale=1"
+          href={home.promo.href}
           className="group relative flex min-h-64 flex-col justify-end overflow-hidden rounded-sm bg-rose-700 p-6 text-white sm:col-span-2 lg:row-span-2"
         >
           <div aria-hidden className="absolute -end-6 -top-6 grid grid-cols-4 gap-2 opacity-25">
@@ -259,26 +256,28 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               <span key={i} className={cn("size-14 rounded-xs", i === 5 ? "bg-accent-400" : "bg-white")} />
             ))}
           </div>
-          <span className="relative text-xs font-bold uppercase tracking-widest text-rose-100">{t("skincareEyebrow")}</span>
-          <h2 className="relative mt-2 max-w-sm text-3xl font-extrabold leading-tight">{t("skincareTitle", { pct: skincarePct })}</h2>
+          <span className="relative text-xs font-bold uppercase tracking-widest text-rose-100">{ar ? home.promo.eyebrowAr : home.promo.eyebrowEn}</span>
+          <h2 className="relative mt-2 max-w-sm text-3xl font-extrabold leading-tight">{withPct(ar ? home.promo.titleAr : home.promo.titleEn, promoPct)}</h2>
           <span className={buttonClass("accent", "md", "relative mt-5 self-start")}>
             {t("shopAll")}
             <ArrowRight className="flip-rtl size-4" aria-hidden />
           </span>
         </Link>
-        {SPOTLIGHTS.map(([slug, category]) => (
-          <SpotlightTile key={slug} product={spotlights.get(slug)} label={cat(category)} locale={loc} />
+        {spotlightList.map((p, i) => (
+          <SpotlightTile key={`${home.spotlights[i]}-${i}`} product={p} label={p ? cat(p.category) : ""} locale={loc} />
         ))}
       </section>
+    ),
 
-      {/* 6 — Best sellers */}
+    bestSellers: (
       <ProductRail title={t("bestTitle")} href="/best-sellers" {...rail}>
         {bestSellers.map((p) => (
           <ProductCard key={p.slug} product={p} />
         ))}
       </ProductRail>
+    ),
 
-      {/* 7 — Brands */}
+    brands: (
       <Box>
         <h2 className="border-b border-line px-4 py-3 text-base font-bold sm:text-lg">{t("brandsTitle")}</h2>
         <ul className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
@@ -295,23 +294,25 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           ))}
         </ul>
       </Box>
+    ),
 
-      {/* 8 — Second quad row */}
+    mosaic2: (
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <QuadBox {...quad("medical-devices")} />
-        <QuadBox {...quad("sports-nutrition")} />
-        <QuadBox {...quad("personal-care")} />
-        <QuadBox {...quad("health-medicine")} />
+        {home.quadRow2.map((slug, i) => (
+          <QuadBox key={`${slug}-${i}`} {...quad(slug)} />
+        ))}
       </section>
+    ),
 
-      {/* 9 — New arrivals */}
+    newArrivals: (
       <ProductRail title={t("newTitle")} href="/new-arrivals" {...rail}>
         {newArrivals.map((p) => (
           <ProductCard key={p.slug} product={p} />
         ))}
       </ProductRail>
+    ),
 
-      {/* 10 — Trust strip */}
+    trust: (
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {[
           { icon: PackageCheck, title: t("trust.genuine"), body: t("trust.genuineBody") },
@@ -331,6 +332,16 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           </div>
         ))}
       </section>
+    ),
+  };
+
+  return (
+    <div className="container-site space-y-4 py-4">
+      {home.sections
+        .filter((sec) => sec.enabled && (sec.key !== "hero" || heroSlides.length))
+        .map((sec) => (
+          <Fragment key={sec.key}>{blocks[sec.key]}</Fragment>
+        ))}
     </div>
   );
 }
