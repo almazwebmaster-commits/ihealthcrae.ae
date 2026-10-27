@@ -13,7 +13,9 @@ import {
   type DeliveryMethod,
   type PaymentChoice,
 } from "@/lib/store-settings";
+import type { CouponError } from "@/lib/promotions";
 import { getProductsBySlugs } from "../catalog";
+import { checkCoupon, couponAmount } from "../promotions";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -37,7 +39,11 @@ export type Quote = {
   issues: QuoteIssue[];
   itemsTotal: number; // at list prices
   discount: number; // Subscribe & save + multi-buy savings
-  subtotal: number;
+  subtotal: number; // items after product discounts, before any promo code
+  /** Applied promo code (uppercase), what it took off the items, and whether it waived delivery */
+  coupon?: { id: number; code: string; type: "PERCENT" | "FIXED" | "FREE_DELIVERY"; descriptionEn: string; descriptionAr: string };
+  couponDiscount: number;
+  couponError?: { code: string; error: CouponError; minSpend?: number };
   deliveryFee: number;
   codFee: number;
   total: number;
@@ -53,7 +59,7 @@ export type Quote = {
  */
 export async function quoteCart(
   cartLines: CartLine[],
-  opts: { emirate?: string; delivery?: DeliveryMethod; payment?: PaymentChoice } = {},
+  opts: { emirate?: string; delivery?: DeliveryMethod; payment?: PaymentChoice; coupon?: string; email?: string } = {},
 ): Promise<Quote> {
   const products = new Map((await getProductsBySlugs([...new Set(cartLines.map((l) => l.slug))])).map((p) => [p.slug, p]));
   const lines: QuoteLine[] = [];
@@ -93,13 +99,29 @@ export async function quoteCart(
   const itemsTotal = round2(lines.reduce((s, l) => s + l.base * l.qty, 0));
   const discount = round2(lines.reduce((s, l) => s + l.savings, 0));
   const subtotal = round2(itemsTotal - discount);
+
+  // Promo code: checked against the subtotal after product discounts.
+  let coupon: Quote["coupon"];
+  let couponError: Quote["couponError"];
+  let couponDiscount = 0;
+  if (opts.coupon?.trim() && lines.length) {
+    const check = await checkCoupon(opts.coupon, { subtotal, email: opts.email });
+    if (check.ok) {
+      const { id, code, type, descriptionEn, descriptionAr } = check.coupon;
+      coupon = { id, code, type, descriptionEn, descriptionAr };
+      couponDiscount = couponAmount(check.coupon, subtotal);
+    } else couponError = { code: opts.coupon.trim().toUpperCase(), error: check.error, minSpend: check.minSpend };
+  }
+
   const express = opts.delivery === "express" && expressAvailable(opts.emirate);
-  const standardFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : STANDARD_DELIVERY_FEE;
+  // The free-delivery threshold uses the subtotal before the promo code.
+  const standardFee = subtotal >= FREE_DELIVERY_THRESHOLD || coupon?.type === "FREE_DELIVERY" ? 0 : STANDARD_DELIVERY_FEE;
   const deliveryFee = round2(standardFee + (express ? EXPRESS_DELIVERY_FEE : 0));
   const hasSubscription = lines.some((l) => l.sub);
-  const codAllowed = !hasSubscription && subtotal + deliveryFee + COD_FEE <= COD_MAX_ORDER;
+  const payable = round2(subtotal - couponDiscount);
+  const codAllowed = !hasSubscription && payable + deliveryFee + COD_FEE <= COD_MAX_ORDER;
   const codFee = opts.payment === "COD" && codAllowed ? COD_FEE : 0;
-  const total = round2(subtotal + deliveryFee + codFee);
+  const total = round2(payable + deliveryFee + codFee);
 
   return {
     lines,
@@ -107,6 +129,9 @@ export async function quoteCart(
     itemsTotal,
     discount,
     subtotal,
+    coupon,
+    couponDiscount,
+    couponError,
     deliveryFee,
     codFee,
     total,

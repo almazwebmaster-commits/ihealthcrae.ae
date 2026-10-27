@@ -2,7 +2,7 @@
 
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe, type Appearance } from "@stripe/stripe-js";
-import { Banknote, CreditCard, Lock, Repeat, Truck, Zap } from "lucide-react";
+import { Banknote, CreditCard, Lock, Repeat, Tag, Truck, Zap } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { FormMessage } from "@/components/auth/AuthCard";
@@ -49,6 +49,9 @@ type Quote = {
   lines: QuoteLine[]; issues: { slug: string; problem: "unavailable" | "stock"; available?: number }[];
   itemsTotal: number; discount: number; subtotal: number; deliveryFee: number; codFee: number; total: number;
   vatAmount: number; hasSubscription: boolean; express: boolean; codAllowed: boolean;
+  coupon: { code: string; type: "PERCENT" | "FIXED" | "FREE_DELIVERY"; descriptionEn: string; descriptionAr: string } | null;
+  couponDiscount: number;
+  couponError: { code: string; error: string; minSpend?: number } | null;
 };
 
 type Form = { email: string; fullName: string; phone: string; emirate: string; area: string; street: string; building: string; unit: string; landmark: string };
@@ -144,6 +147,9 @@ export function CheckoutClient({
   const [delivery, setDelivery] = useState<DeliveryMethod>("standard");
   const [payment, setPayment] = useState<PaymentChoice>("CARD");
   const [note, setNote] = useState("");
+  /** Promo code the shopper applied (re-checked by the server on every quote and at placement) */
+  const [coupon, setCoupon] = useState("");
+  const [codeInput, setCodeInput] = useState("");
   const [quote, setQuote] = useState<Quote | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [message, setMessage] = useState<string>();
@@ -162,7 +168,7 @@ export function CheckoutClient({
     fetch("/api/checkout/quote", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lines, emirate: form.emirate || undefined, delivery: effectiveDelivery, payment }),
+      body: JSON.stringify({ lines, emirate: form.emirate || undefined, delivery: effectiveDelivery, payment, coupon: coupon || undefined, email: user?.email }),
       signal: ctrl.signal,
     })
       .then((r) => r.json())
@@ -170,7 +176,7 @@ export function CheckoutClient({
       .catch(() => {});
     return () => ctrl.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- linesKey is the stable form of `lines`
-  }, [linesKey, form.emirate, effectiveDelivery, payment]);
+  }, [linesKey, form.emirate, effectiveDelivery, payment, coupon]);
 
   const effectivePayment: PaymentChoice = quote && !quote.codAllowed ? "CARD" : payment;
   const returnUrl = useMemo(
@@ -197,14 +203,14 @@ export function CheckoutClient({
     const res = await fetch("/api/checkout/place", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lines, ...form, note, delivery: effectiveDelivery, payment: effectivePayment, saveAddress: user ? addressId === "new" && saveAddress : false, locale }),
+      body: JSON.stringify({ lines, ...form, note, delivery: effectiveDelivery, payment: effectivePayment, saveAddress: user ? addressId === "new" && saveAddress : false, locale, coupon: quote?.coupon ? coupon : undefined }),
     })
       .then((r) => r.json())
       .catch(() => ({ ok: false, error: "payment" }));
     setPlacing(false);
     if (!res.ok) {
       if (res.fields) setErrors(res.fields);
-      setMessage(t(`errors.${res.error}` as "errors.invalid"));
+      setMessage(res.error === "coupon" ? t("couponRejected", { reason: t(`couponErrors.${res.couponError ?? "notFound"}` as "couponErrors.notFound", { min: "" }) }) : t(`errors.${res.error}` as "errors.invalid"));
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -353,11 +359,58 @@ export function CheckoutClient({
               </li>
             ))}
           </ul>
+
+          {/* Promo code */}
+          <div className="mt-4 border-t border-line pt-3">
+            {quote?.coupon ? (
+              <div className="flex items-start justify-between gap-2 rounded-sm border border-success/30 bg-success-50 px-3 py-2 text-sm">
+                <div className="min-w-0">
+                  <p className="inline-flex items-center gap-1.5 font-bold text-success">
+                    <Tag className="size-3.5" aria-hidden />
+                    <span dir="ltr">{quote.coupon.code}</span>
+                  </p>
+                  {(locale === "ar" ? quote.coupon.descriptionAr : quote.coupon.descriptionEn) && (
+                    <p className="text-xs text-ink-700">{locale === "ar" ? quote.coupon.descriptionAr : quote.coupon.descriptionEn}</p>
+                  )}
+                </div>
+                {!locked && (
+                  <button type="button" className="shrink-0 text-xs font-semibold text-ink-600 hover:text-sale hover:underline" onClick={() => { setCoupon(""); setCodeInput(""); }}>
+                    {t("removeCode")}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <form
+                className="flex gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setCoupon(codeInput.trim());
+                }}
+              >
+                <label htmlFor="c-promo" className="sr-only">{t("promoCode")}</label>
+                <Input id="c-promo" dir="ltr" placeholder={t("promoCode")} value={codeInput} disabled={locked} autoComplete="off" className="uppercase placeholder:normal-case"
+                  onChange={(e) => setCodeInput(e.target.value)} aria-invalid={!!quote?.couponError} aria-describedby={quote?.couponError ? "c-promo-error" : undefined} />
+                <Button type="submit" variant="outline" disabled={locked || !codeInput.trim()}>{t("applyCode")}</Button>
+              </form>
+            )}
+            {quote?.couponError && (
+              <p id="c-promo-error" role="alert" className="mt-1.5 text-xs font-semibold text-sale">
+                {t(`couponErrors.${quote.couponError.error}` as "couponErrors.notFound", { min: fmt(quote.couponError.minSpend ?? 0) })}
+              </p>
+            )}
+          </div>
+
           {quote && (
             <dl className="mt-4 space-y-1.5 border-t border-line pt-3 text-sm">
               <div className="flex justify-between"><dt className="text-ink-600">{t("items")}</dt><dd className="tabular-nums">{fmt(quote.itemsTotal)}</dd></div>
               {quote.discount > 0 && <div className="flex justify-between text-success"><dt>{t("savings")}</dt><dd className="tabular-nums">−{fmt(quote.discount)}</dd></div>}
-              <div className="flex justify-between"><dt className="text-ink-600">{t("delivery")}</dt><dd className="tabular-nums">{quote.deliveryFee ? fmt(quote.deliveryFee) : t("free")}</dd></div>
+              {quote.coupon && quote.couponDiscount > 0 && (
+                <div className="flex justify-between text-success"><dt>{t("promo", { code: quote.coupon.code })}</dt><dd className="tabular-nums">−{fmt(quote.couponDiscount)}</dd></div>
+              )}
+              <div className="flex justify-between">
+                <dt className="text-ink-600">{t("delivery")}{quote.coupon?.type === "FREE_DELIVERY" && <span className="ms-1 text-xs font-semibold text-success">({quote.coupon.code})</span>}</dt>
+                <dd className="tabular-nums">{quote.deliveryFee ? fmt(quote.deliveryFee) : t("free")}</dd>
+              </div>
               {quote.codFee > 0 && <div className="flex justify-between"><dt className="text-ink-600">{t("codFee")}</dt><dd className="tabular-nums">{fmt(quote.codFee)}</dd></div>}
               <div className="flex justify-between border-t border-line pt-2 text-base font-extrabold"><dt>{t("total")}</dt><dd className="tabular-nums">{fmt(quote.total)}</dd></div>
               <div className="flex justify-between text-xs text-ink-500"><dt>{t("vat")}</dt><dd className="tabular-nums">{fmt(quote.vatAmount)}</dd></div>

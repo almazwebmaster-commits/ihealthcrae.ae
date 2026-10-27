@@ -1,9 +1,10 @@
 "use client";
 
-import { Banknote, Layers, Lock, PackageCheck, Repeat, RotateCcw, Truck } from "lucide-react";
+import { Banknote, Layers, Lock, PackageCheck, Repeat, RotateCcw, Truck, Zap } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { AddToCartButton } from "@/components/catalog/AddToCartButton";
+import { Countdown } from "@/components/catalog/Countdown";
 import { Price } from "@/components/catalog/Price";
 import { Box } from "@/components/ui/Box";
 import { buttonClass } from "@/components/ui/Button";
@@ -45,6 +46,17 @@ export function BuyBox({ product }: { product: Product }) {
 
   return (
     <Box className="space-y-4 p-4">
+      {product.flashEndsAt && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-sm bg-sale px-3 py-2 text-white">
+          <span className="inline-flex items-center gap-1.5 text-sm font-extrabold">
+            <Zap className="size-4" aria-hidden />
+            {t("flashDeal")}
+          </span>
+          <span className="[&_*]:text-white [&_span.rounded-xs]:bg-white/20">
+            <Countdown label={t("flashEndsIn")} until={product.flashEndsAt} />
+          </span>
+        </div>
+      )}
       <div>
         <Price price={line.unit} was={was} size="lg" />
         <p className="mt-1 text-xs text-ink-500">

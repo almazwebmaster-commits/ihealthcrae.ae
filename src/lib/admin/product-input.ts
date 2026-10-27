@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fromUaeInput } from "@/lib/uae-time";
 
 export const productStatuses = ["DRAFT", "ACTIVE", "ARCHIVED"] as const;
 export type ProductStatus = (typeof productStatuses)[number];
@@ -37,6 +38,10 @@ export const ProductInput = z
     stock: z.number().int().min(0).max(1_000_000),
     tags: z.array(z.enum(productTags)).max(4),
     subscribePct: z.number().int().min(1).max(50).nullable(),
+    /** Flash deal: % off between two UAE-time datetime-local values (start optional = now) */
+    flashPct: z.number().int().min(1).max(90).nullable().default(null),
+    flashStartsAt: z.string().max(25).default(""),
+    flashEndsAt: z.string().max(25).default(""),
     tiers: z.array(z.object({ minQty: z.number().int().min(2).max(100), pct: z.number().int().min(1).max(90) })).max(5),
     variants: z
       .array(z.object({ labelEn: z.string().trim().min(1).max(80), labelAr: z.string().trim().min(1).max(80), price: money }))
@@ -48,6 +53,12 @@ export const ProductInput = z
   .superRefine((v, ctx) => {
     if (!v.brandSlug && !v.newBrand) ctx.addIssue({ code: "custom", path: ["brandSlug"], message: "required" });
     if (v.compareAt != null && v.compareAt <= v.price) ctx.addIssue({ code: "custom", path: ["compareAt"], message: "compareAt" });
+    if (v.flashPct != null) {
+      const end = fromUaeInput(v.flashEndsAt);
+      const start = fromUaeInput(v.flashStartsAt);
+      if (!end) ctx.addIssue({ code: "custom", path: ["flashEndsAt"], message: "required" });
+      else if (start && end <= start) ctx.addIssue({ code: "custom", path: ["flashEndsAt"], message: "endBeforeStart" });
+    }
     const qtys = v.tiers.map((t) => t.minQty);
     if (new Set(qtys).size !== qtys.length) ctx.addIssue({ code: "custom", path: ["tiers"], message: "tiers" });
   });

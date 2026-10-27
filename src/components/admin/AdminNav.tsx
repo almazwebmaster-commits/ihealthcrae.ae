@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Package, ShoppingBag } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Tag } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -8,6 +8,7 @@ const ITEMS = [
   { href: "/admin", icon: LayoutDashboard, key: "dashboard" },
   { href: "/admin/orders", icon: ShoppingBag, key: "orders" },
   { href: "/admin/products", icon: Package, key: "products" },
+  { href: "/admin/promotions", icon: Tag, key: "promotions" },
 ] as const;
 
 export function AdminNav({ labels, openOrders }: { labels: Record<string, string>; openOrders: number }) {

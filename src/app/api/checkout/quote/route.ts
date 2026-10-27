@@ -8,6 +8,8 @@ const Body = z.object({
   emirate: z.string().max(40).optional(),
   delivery: z.enum(deliveryMethods).optional(),
   payment: z.enum(["CARD", "COD"]).optional(),
+  coupon: z.string().max(40).optional(),
+  email: z.string().max(200).optional(),
 });
 
 /** Server-side price for the current checkout choices (what the customer will actually pay). */
@@ -35,6 +37,9 @@ export async function POST(req: NextRequest) {
     itemsTotal: q.itemsTotal,
     discount: q.discount,
     subtotal: q.subtotal,
+    coupon: q.coupon ? { code: q.coupon.code, type: q.coupon.type, descriptionEn: q.coupon.descriptionEn, descriptionAr: q.coupon.descriptionAr } : null,
+    couponDiscount: q.couponDiscount,
+    couponError: q.couponError ?? null,
     deliveryFee: q.deliveryFee,
     codFee: q.codFee,
     total: q.total,

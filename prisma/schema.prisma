@@ -81,6 +81,11 @@ model Product {
   /// Subscribe & save discount (%); null = not eligible
   subscribePct  Int?
 
+  /// Flash deal: % off every option between flashStartsAt and flashEndsAt
+  flashPct      Int?
+  flashStartsAt DateTime?
+  flashEndsAt   DateTime?
+
   rating        Decimal       @default(0) @db.Decimal(2, 1)
   reviewCount   Int           @default(0)
 
@@ -100,6 +105,7 @@ model Product {
   subscriptions Subscription[]
   redirects     ProductRedirect[]
 
+  @@index([flashEndsAt])
   @@index([status, categoryId])
   @@index([status, subcategoryId])
   @@index([brandId])
@@ -346,6 +352,9 @@ model Order {
   // Money (AED, VAT-inclusive)
   itemsTotal    Decimal       @db.Decimal(10, 2)
   discount      Decimal       @default(0) @db.Decimal(10, 2)
+  /// Promo code applied at checkout (snapshot) and the amount it took off
+  couponCode     String?
+  couponDiscount Decimal      @default(0) @db.Decimal(10, 2)
   deliveryFee   Decimal       @default(0) @db.Decimal(10, 2)
   total         Decimal       @db.Decimal(10, 2)
   vatAmount     Decimal       @db.Decimal(10, 2)
@@ -357,6 +366,7 @@ model Order {
 
   items         OrderItem[]
   events        OrderEvent[]
+  couponRedemption CouponRedemption?
 
   @@index([status, placedAt])
   @@index([userId])
@@ -460,3 +470,52 @@ model Subscription {
   @@index([status, nextDeliveryAt])
   @@index([userId])
 }
+
+// ── Promotions
+
+enum CouponType {
+  PERCENT
+  FIXED
+  FREE_DELIVERY
+}
+
+model Coupon {
+  id            Int        @id @default(autoincrement())
+  /// Stored uppercase; matched case-insensitively at checkout
+  code          String     @unique
+  descriptionEn String     @default("")
+  descriptionAr String     @default("")
+  type          CouponType
+  /// Percent (PERCENT) or AED (FIXED); unused for FREE_DELIVERY
+  value         Decimal    @default(0) @db.Decimal(10, 2)
+  /// Cap on a PERCENT discount, in AED
+  maxDiscount   Decimal?   @db.Decimal(10, 2)
+  /// Items subtotal (after product discounts) needed to use the code
+  minSpend      Decimal?   @db.Decimal(10, 2)
+  startsAt      DateTime?
+  endsAt        DateTime?
+  /// Total uses allowed (null = unlimited) and uses so far
+  usageLimit    Int?
+  usedCount     Int        @default(0)
+  /// Uses allowed per customer email (null = unlimited)
+  perCustomerLimit Int?
+  active        Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  redemptions   CouponRedemption[]
+}
+
+model CouponRedemption {
+  id        Int      @id @default(autoincrement())
+  couponId  Int
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  orderId   Int      @unique
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  email     String
+  amount    Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+
+  @@index([couponId, email])
+}
+

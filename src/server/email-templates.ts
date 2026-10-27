@@ -92,6 +92,8 @@ type OrderForMail = {
   emirate: string;
   itemsTotal: unknown;
   discount: unknown;
+  couponCode?: string | null;
+  couponDiscount?: unknown;
   deliveryFee: unknown;
   total: unknown;
   vatAmount: unknown;
@@ -103,7 +105,7 @@ const orderCopy = {
     subject: (n: string) => `Order confirmed — ${n}`,
     title: "Thank you — your order is confirmed",
     intro: (n: string) => `We've received order ${n} and will let you know when it's on its way.`,
-    items: "Items", discount: "Savings", delivery: "Delivery", free: "Free", total: "Total", vat: "Includes VAT",
+    items: "Items", discount: "Savings", promo: (code: string) => `Promo code ${code}`, delivery: "Delivery", free: "Free", total: "Total", vat: "Includes VAT",
     payment: "Payment", card: "Card (paid)", cod: "Cash on delivery", deliverTo: "Delivering to",
     every: (w: number) => `Subscribe & save · every ${w} weeks`,
   },
@@ -111,7 +113,7 @@ const orderCopy = {
     subject: (n: string) => `تم تأكيد الطلب — ${n}`,
     title: "شكراً لك — تم تأكيد طلبك",
     intro: (n: string) => `استلمنا الطلب ${n} وسنُعلمك عند خروجه للتوصيل.`,
-    items: "المنتجات", discount: "التوفير", delivery: "التوصيل", free: "مجاني", total: "الإجمالي", vat: "شامل ضريبة القيمة المضافة",
+    items: "المنتجات", discount: "التوفير", promo: (code: string) => `رمز الخصم ${code}`, delivery: "التوصيل", free: "مجاني", total: "الإجمالي", vat: "شامل ضريبة القيمة المضافة",
     payment: "الدفع", card: "بطاقة (مدفوع)", cod: "الدفع عند الاستلام", deliverTo: "التوصيل إلى",
     every: (w: number) => `اشترك ووفّر · كل ${w} أسابيع`,
   },
@@ -148,7 +150,7 @@ export function orderConfirmationMail(order: OrderForMail): Mail {
 <p style="margin:0 0 20px;font-size:14px;line-height:1.6">${esc(greeting[l](order.fullName))} ${esc(c.intro(order.number))}</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${items}</table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px">
-${row(c.items, fmt(order.itemsTotal))}${discount > 0 ? row(c.discount, `−${fmt(discount)}`) : ""}${row(c.delivery, delivery ? fmt(delivery) : c.free)}${row(c.total, fmt(order.total), true)}${row(c.vat, fmt(order.vatAmount))}
+${row(c.items, fmt(order.itemsTotal))}${discount > 0 ? row(c.discount, `−${fmt(discount)}`) : ""}${order.couponCode && Number(order.couponDiscount) > 0 ? row(c.promo(order.couponCode), `−${fmt(order.couponDiscount)}`) : ""}${row(c.delivery, delivery ? fmt(delivery) : c.free)}${row(c.total, fmt(order.total), true)}${row(c.vat, fmt(order.vatAmount))}
 </table>
 <p style="margin:20px 0 4px;font-size:13px"><strong>${esc(c.payment)}:</strong> ${esc(order.paymentMethod === "COD" ? c.cod : c.card)}</p>
 <p style="margin:0;font-size:13px"><strong>${esc(c.deliverTo)}:</strong> ${esc(address)}</p>

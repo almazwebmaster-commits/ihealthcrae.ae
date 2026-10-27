@@ -28,6 +28,8 @@ export type Product = {
   subName: L;
   price: number;
   was?: number;
+  /** ISO time a live flash deal ends (prices above already include it). */
+  flashEndsAt?: string;
   rating: number;
   reviews: number;
   stock: number;

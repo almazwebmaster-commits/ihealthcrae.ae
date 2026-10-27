@@ -7,12 +7,13 @@ import { useRef, useState, useTransition } from "react";
 import { saveProductAction, setProductStatusAction } from "@/app/[locale]/admin/products/actions";
 import { ProductCopyAssistant } from "@/components/admin/ProductCopyAssistant";
 import { FormMessage } from "@/components/auth/AuthCard";
+import { Badge } from "@/components/ui/Badge";
 import { Box } from "@/components/ui/Box";
 import { Button, buttonClass } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { Link, useRouter } from "@/i18n/navigation";
 import { productStatuses, productTags, slugify, type ProductInputT } from "@/lib/admin/product-input";
-import { tr } from "@/lib/i18n-utils";
+import { formatPrice, tr } from "@/lib/i18n-utils";
 import { cn } from "@/lib/utils";
 
 type Options = {
@@ -24,7 +25,7 @@ type Initial = ProductInputT & { sku?: string; rating?: number; reviews?: number
 
 const EMPTY: Initial = {
   slug: "", status: "DRAFT", nameEn: "", nameAr: "", descEn: "", descAr: "", brandSlug: "", newBrand: "",
-  subcategory: "", price: 0, compareAt: null, stock: 0, tags: [], subscribePct: null, tiers: [], variants: [], images: [],
+  subcategory: "", price: 0, compareAt: null, stock: 0, tags: [], subscribePct: null, flashPct: null, flashStartsAt: "", flashEndsAt: "", tiers: [], variants: [], images: [],
 };
 
 const select = "h-10 w-full rounded-sm border border-line-strong bg-white px-3 text-sm focus:border-brand-500 focus:outline-none aria-invalid:border-sale";
@@ -43,6 +44,16 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
 const num = (s: string) => (s.trim() === "" ? NaN : Number(s));
 
 const NAME_MAX = 200;
+
+/** Live / scheduled / ended badge for the flash deal being edited (times in UAE). */
+function FlashStatus({ startsAt, endsAt }: { startsAt: string; endsAt: string }) {
+  const t = useTranslations("AdminUI.editor.flash");
+  // Compare as UAE-local strings to avoid timezone surprises in the browser.
+  const [nowUae] = useState(() => new Date(Date.now() + 4 * 3600_000).toISOString().slice(0, 16));
+  const state = !endsAt ? "noEnd" : endsAt <= nowUae ? "ended" : startsAt && startsAt > nowUae ? "scheduled" : "live";
+  const tone = { live: "success", scheduled: "info", ended: "neutral", noEnd: "sale" } as const;
+  return <Badge tone={tone[state]}>{t(`state.${state}`)}</Badge>;
+}
 
 /** Character count for product names; appears as a name gets long, turns red past the limit. */
 function NameLength({ text }: { text: string }) {
@@ -438,6 +449,36 @@ export function ProductEditor({ initial, options }: { initial?: Initial; options
             {err("tiers")}
           </fieldset>
         </div>
+      </Section>
+
+      <Section title={t("flash.title")} hint={t("flash.hint")}>
+        <div className="grid gap-4 md:grid-cols-[10rem_1fr_1fr]">
+          <div>
+            <Label htmlFor="flashPct">{t("flash.pct")}</Label>
+            <select id="flashPct" className={select} value={v.flashPct ?? ""} onChange={(e) => set("flashPct", e.target.value ? Number(e.target.value) : null)}>
+              <option value="">{t("flash.off")}</option>
+              {[5, 10, 15, 20, 25, 30, 40, 50, 60, 70].map((p) => (
+                <option key={p} value={p}>{t("flash.pctOption", { pct: p })}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <Label htmlFor="flashStartsAt">{t("flash.starts")}</Label>
+            <Input id="flashStartsAt" type="datetime-local" dir="ltr" disabled={v.flashPct == null} value={v.flashStartsAt} onChange={(e) => set("flashStartsAt", e.target.value)} />
+            <p className="mt-1 text-xs text-ink-500">{t("flash.startsHint")}</p>
+          </div>
+          <div>
+            <Label htmlFor="flashEndsAt">{t("flash.ends")}</Label>
+            <Input id="flashEndsAt" type="datetime-local" dir="ltr" disabled={v.flashPct == null} value={v.flashEndsAt} aria-invalid={!!errors.flashEndsAt} onChange={(e) => set("flashEndsAt", e.target.value)} />
+            {err("flashEndsAt")}
+          </div>
+        </div>
+        {v.flashPct != null && Number.isFinite(num(price)) && (
+          <p className="mt-3 text-sm">
+            <FlashStatus startsAt={v.flashStartsAt} endsAt={v.flashEndsAt} />{" "}
+            <span className="text-ink-700">{t("flash.preview", { price: formatPrice(Math.round(num(price) * (100 - v.flashPct)) / 100, locale), was: formatPrice(num(price), locale) })}</span>
+          </p>
+        )}
       </Section>
 
       {/* Sticky save bar */}

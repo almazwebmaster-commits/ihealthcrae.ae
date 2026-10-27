@@ -151,7 +151,9 @@
     "tierSave": "Save {pct}%",
     "tierFull": "Regular price",
     "tierUpsell": "Add {more} more to save {pct}%",
-    "noStacking": "Discounts don't combine — the best one is applied automatically."
+    "noStacking": "Discounts don't combine — the best one is applied automatically.",
+    "flashDeal": "Flash deal",
+    "flashEndsIn": "Ends in"
   },
   "Listing": {
     "home": "Home",
@@ -440,7 +442,8 @@
       "products": "Products",
       "viewStore": "View store",
       "signOut": "Sign out",
-      "admin": "Admin"
+      "admin": "Admin",
+      "promotions": "Promotions"
     },
     "dashboard": {
       "title": "Dashboard",
@@ -562,7 +565,8 @@
         "uploadType": "Only JPG, PNG, WebP or AVIF images.",
         "uploadSize": "Each photo must be under 10 MB.",
         "uploadUnreadable": "This file couldn't be read as an image.",
-        "tooLong": "Too long — please shorten it."
+        "tooLong": "Too long — please shorten it.",
+        "endBeforeStart": "Must be after the start."
       },
       "ai": {
         "title": "AI assistant",
@@ -621,7 +625,24 @@
         "slugRedirect": "The old address will redirect to the new one automatically, so existing links and Google rankings are kept."
       },
       "nameLength": "{count} / {max} characters",
-      "nameTooLong": "Use the AI assistant below to shorten it."
+      "nameTooLong": "Use the AI assistant below to shorten it.",
+      "flash": {
+        "title": "Flash deal",
+        "hint": "A time-limited % off this product (all options). Shown with a countdown and listed under Deals while live.",
+        "pct": "Discount",
+        "off": "No flash deal",
+        "pctOption": "{pct}% off",
+        "starts": "Starts (UAE time)",
+        "startsHint": "Leave empty to start as soon as you save.",
+        "ends": "Ends (UAE time)",
+        "preview": "Deal price {price} (regular {was}).",
+        "state": {
+          "live": "Live now",
+          "scheduled": "Scheduled",
+          "ended": "Ended",
+          "noEnd": "Set an end time"
+        }
+      }
     },
     "importer": {
       "title": "Import products from CSV",
@@ -696,7 +717,8 @@
       "deliveryMethod": "Delivery",
       "express": "Express",
       "standard": "Standard",
-      "renewal": "Subscription renewal #{id}"
+      "renewal": "Subscription renewal #{id}",
+      "promo": "Promo code {code}"
     },
     "invoice": {
       "title": "Tax invoice",
@@ -707,6 +729,105 @@
       "paymentMethod": "Payment method",
       "print": "Print",
       "thanks": "Thank you for shopping with iHealthcare."
+    },
+    "promotions": {
+      "title": "Promotions",
+      "subtitle": "Promo codes customers enter at checkout, and time-limited flash deals.",
+      "newCode": "New promo code",
+      "editCode": "Edit promo code",
+      "back": "All promotions",
+      "save": "Save code",
+      "saving": "Saving…",
+      "saved": "Promo code saved.",
+      "enable": "Enable",
+      "disable": "Disable",
+      "noCodes": "No promo codes yet.",
+      "noDeals": "No flash deals live or scheduled. Set one on a product's page under “Flash deal”.",
+      "flashTitle": "Flash deals",
+      "flashSubtitle": "Live and upcoming deals. Edit a deal on the product's page.",
+      "now": "Now",
+      "noEnd": "No end",
+      "always": "Always",
+      "usedSummary": "Used {count, plural, =0 {0 times} one {once} other {# times}} · {total} discounted in total",
+      "recentUses": "Recent uses",
+      "noUses": "Not used yet.",
+      "col": {
+        "code": "Code",
+        "offer": "Offer",
+        "rules": "Rules",
+        "period": "Valid",
+        "uses": "Uses",
+        "status": "Status",
+        "product": "Product",
+        "dealPrice": "Deal price",
+        "stock": "Stock",
+        "order": "Order",
+        "customer": "Customer",
+        "saved": "Discount",
+        "orderTotal": "Order total",
+        "date": "Date"
+      },
+      "status": {
+        "active": "Active",
+        "scheduled": "Scheduled",
+        "expired": "Expired",
+        "usedUp": "Used up",
+        "disabled": "Disabled",
+        "live": "Live",
+        "hidden": "Product hidden"
+      },
+      "type": {
+        "PERCENT": "Percentage off",
+        "FIXED": "Fixed amount off",
+        "FREE_DELIVERY": "Free delivery"
+      },
+      "typeHint": {
+        "PERCENT": "e.g. 10% off the items",
+        "FIXED": "e.g. AED 20 off the items",
+        "FREE_DELIVERY": "Waives the standard delivery fee"
+      },
+      "summary": {
+        "percent": "{pct}% off",
+        "cap": "(up to {max})",
+        "fixed": "{amount} off",
+        "freeDelivery": "Free delivery",
+        "minSpend": "min. spend {min}",
+        "perCustomer": "{count, plural, one {once} other {# times}} per customer",
+        "limit": "{count} uses in total"
+      },
+      "form": {
+        "code": "Code",
+        "codeHint": "3–30 letters, numbers, - or _. Customers can type it in any case.",
+        "descriptionEn": "Description (English)",
+        "descriptionAr": "Description (Arabic)",
+        "descriptionHint": "Shown to the customer when the code is applied (optional).",
+        "discount": "Discount",
+        "type": "Discount type",
+        "percent": "Percent off",
+        "amount": "Amount off (AED)",
+        "maxDiscount": "Maximum discount (AED)",
+        "optional": "Optional",
+        "rules": "Rules",
+        "minSpend": "Minimum spend (AED)",
+        "minSpendHint": "Items total after product discounts. Leave empty for none.",
+        "usageLimit": "Total uses",
+        "perCustomerLimit": "Uses per customer",
+        "unlimitedHint": "Leave empty for unlimited.",
+        "startsAt": "Starts (UAE time)",
+        "startsHint": "Leave empty to start now.",
+        "endsAt": "Ends (UAE time)",
+        "endsHint": "Leave empty for no end date.",
+        "active": "Active"
+      },
+      "errors": {
+        "generic": "Please fix the highlighted fields.",
+        "required": "Required.",
+        "code": "Use 3–30 letters, numbers, - or _.",
+        "taken": "Another promo code already uses this code.",
+        "percent": "Enter a percentage between 1 and 90.",
+        "endBeforeStart": "Must be after the start.",
+        "date": "Enter a valid date."
+      }
     }
   },
   "Checkout": {
@@ -780,7 +901,22 @@
       "issues": "Some items in your cart changed — please review them.",
       "codNotAllowed": "Cash on delivery isn't available for this order.",
       "signInForSubscription": "Please sign in to buy Subscribe & save items.",
-      "payment": "We couldn't start the card payment. Please try again."
+      "payment": "We couldn't start the card payment. Please try again.",
+      "coupon": "Your promo code couldn't be used."
+    },
+    "promoCode": "Promo code",
+    "applyCode": "Apply",
+    "removeCode": "Remove",
+    "promo": "Promo code {code}",
+    "couponRejected": "Your promo code couldn't be used: {reason}",
+    "couponErrors": {
+      "notFound": "This code isn't valid.",
+      "inactive": "This code is no longer available.",
+      "notStarted": "This code isn't active yet.",
+      "expired": "This code has expired.",
+      "minSpend": "Spend at least {min} to use this code.",
+      "usedUp": "This code has been fully used.",
+      "perCustomer": "You've already used this code."
     }
   },
   "Subscriptions": {

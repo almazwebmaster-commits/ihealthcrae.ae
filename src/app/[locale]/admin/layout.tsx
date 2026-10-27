@@ -33,7 +33,7 @@ export default async function AdminLayout({ children, params }: LayoutProps<"/[l
           </Link>
         </div>
         <div className="px-2 pb-2 lg:flex-1">
-          <AdminNav labels={{ dashboard: t("dashboard"), orders: t("orders"), products: t("products") }} openOrders={openOrders} />
+          <AdminNav labels={{ dashboard: t("dashboard"), orders: t("orders"), products: t("products"), promotions: t("promotions") }} openOrders={openOrders} />
         </div>
         <div className="hidden space-y-2 border-t border-white/10 p-4 text-xs text-ink-300 lg:block">
           <p className="truncate font-semibold text-white">{user.name}</p>

@@ -10,10 +10,14 @@ function subscribe(cb: () => void) {
 }
 const nowSeconds = () => Math.floor(Date.now() / 1000);
 
-/** Counts down to midnight UAE time — "Deals of the day" end. */
-export function Countdown({ label }: { label: string }) {
+/**
+ * Counts down to `until` (ISO time, e.g. a flash deal's end) or, by default, to
+ * midnight UAE time — when "Deals of the day" end. Hours run past 24 for longer deals.
+ */
+export function Countdown({ label, until }: { label: string; until?: string }) {
   const now = useSyncExternalStore(subscribe, nowSeconds, () => 0);
-  const left = now ? 86400 - ((now + DUBAI_OFFSET) % 86400) : null;
+  const end = until ? Math.floor(new Date(until).getTime() / 1000) : null;
+  const left = !now ? null : end != null ? Math.max(0, end - now) : 86400 - ((now + DUBAI_OFFSET) % 86400);
   const parts = left == null
     ? ["--", "--", "--"]
     : [Math.floor(left / 3600), Math.floor((left % 3600) / 60), left % 60].map((n) =>

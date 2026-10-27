@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { nextStatuses, openStatuses, orderStatuses, type OrderStatus } from "@/lib/orders";
 import { db } from "../db";
+import { releaseCoupon } from "../promotions";
 import { stripe } from "../stripe";
 import { audit, type Actor } from "./audit";
 
@@ -80,6 +81,7 @@ export async function changeOrderStatus(actor: Actor, number: string, to: OrderS
         if (item.productId) await tx.product.update({ where: { id: item.productId }, data: { stock: { increment: item.qty } } });
       }
     }
+    if (to === "CANCELLED") await releaseCoupon(tx, order.id);
     const fullNote = [note?.trim(), refundNote].filter(Boolean).join("\n") || null;
     await tx.orderEvent.create({ data: { orderId: order.id, status: to, note: fullNote, actorId: actor.id, actorName: actor.name } });
   });

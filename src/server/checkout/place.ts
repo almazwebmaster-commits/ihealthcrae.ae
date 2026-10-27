@@ -4,12 +4,14 @@ import type { Prisma } from "@/generated/prisma/client";
 import { emirateSlugs } from "@/lib/emirates";
 import { orderNumber } from "@/lib/orders";
 import { normalizeUaePhone } from "@/lib/phone";
-import { deliveryMethods } from "@/lib/store-settings";
+import { deliveryMethods, FREE_DELIVERY_THRESHOLD, STANDARD_DELIVERY_FEE } from "@/lib/store-settings";
 import { db } from "../db";
 import { orderConfirmationMail } from "../email-templates";
 import { sendMail } from "../mail";
 import type { Session } from "../auth";
 import { ensureStripeCustomer, stripe, toFils } from "../stripe";
+import { CouponRaceError, redeemCoupon, releaseCoupon } from "../promotions";
+import type { CouponError } from "@/lib/promotions";
 import { quoteCart, type QuoteIssue } from "./quote";
 import { receiptToken } from "./receipt-token";
 
@@ -33,13 +35,20 @@ export const PlaceOrderInput = z.object({
   delivery: z.enum(deliveryMethods),
   payment: z.enum(["CARD", "COD"]),
   saveAddress: z.boolean().optional(),
+  coupon: z.string().trim().max(40).optional().transform((v) => v || undefined),
   locale: z.enum(["en", "ar"]),
 });
 export type PlaceOrderInputT = z.infer<typeof PlaceOrderInput>;
 
 export type PlaceResult =
   | { ok: true; number: string; token: string; clientSecret?: string }
-  | { ok: false; error: "invalid" | "invalidPhone" | "empty" | "issues" | "codNotAllowed" | "signInForSubscription" | "payment"; fields?: string[]; issues?: QuoteIssue[] };
+  | {
+      ok: false;
+      error: "invalid" | "invalidPhone" | "empty" | "issues" | "codNotAllowed" | "signInForSubscription" | "payment" | "coupon";
+      fields?: string[];
+      issues?: QuoteIssue[];
+      couponError?: CouponError;
+    };
 
 class StockError extends Error {
   constructor(public slug: string) {
@@ -70,11 +79,12 @@ export async function placeOrder(raw: unknown, session: Session | null): Promise
   const phone = normalizeUaePhone(v.phone);
   if (!phone) return { ok: false, error: "invalidPhone", fields: ["phone"] };
 
-  const quote = await quoteCart(v.lines, { emirate: v.emirate, delivery: v.delivery, payment: v.payment });
+  const quote = await quoteCart(v.lines, { emirate: v.emirate, delivery: v.delivery, payment: v.payment, coupon: v.coupon, email: v.email });
   if (!quote.lines.length) return { ok: false, error: "empty" };
   if (quote.issues.length) return { ok: false, error: "issues", issues: quote.issues };
   if (quote.hasSubscription && !session) return { ok: false, error: "signInForSubscription" };
   if (v.payment === "COD" && !quote.codAllowed) return { ok: false, error: "codNotAllowed" };
+  if (quote.couponError) return { ok: false, error: "coupon", couponError: quote.couponError.error };
 
   const items = quote.lines.map((l) => ({
     productId: l.product.id,
@@ -117,6 +127,8 @@ export async function placeOrder(raw: unknown, session: Session | null): Promise
           customerNote: v.note,
           itemsTotal: quote.itemsTotal,
           discount: quote.discount,
+          couponCode: quote.coupon?.code ?? null,
+          couponDiscount: quote.couponDiscount,
           deliveryFee: round2(quote.deliveryFee + quote.codFee),
           total: quote.total,
           vatAmount: quote.vatAmount,
@@ -124,10 +136,16 @@ export async function placeOrder(raw: unknown, session: Session | null): Promise
           events: { create: { status: cod ? "PLACED" : "PENDING_PAYMENT", note: cod ? "Cash on delivery" : "Awaiting card payment" } },
         },
       });
+      if (quote.coupon) {
+        // Benefit = money off the items, or the delivery fee a free-delivery code waived.
+        const waived = quote.coupon.type === "FREE_DELIVERY" && quote.subtotal < FREE_DELIVERY_THRESHOLD ? STANDARD_DELIVERY_FEE : 0;
+        await redeemCoupon(tx, quote.coupon.id, { id: created.id, email: v.email }, round2(quote.couponDiscount + waived), { subtotal: quote.subtotal });
+      }
       return tx.order.update({ where: { id: created.id }, data: { number: orderNumber(created.id) } });
     });
   } catch (e) {
     if (e instanceof StockError) return { ok: false, error: "issues", issues: [{ slug: e.slug, problem: "stock" }] };
+    if (e instanceof CouponRaceError) return { ok: false, error: "coupon", couponError: e.reason };
     throw e;
   }
 
@@ -159,7 +177,10 @@ export async function placeOrder(raw: unknown, session: Session | null): Promise
     return { ok: true, number: order.number, token, clientSecret: intent.client_secret! };
   } catch (e) {
     console.error("[checkout] Stripe error", e);
-    await db.order.update({ where: { id: order.id }, data: { status: "CANCELLED", events: { create: { status: "CANCELLED", note: "Card payment could not be started" } } } });
+    await db.$transaction(async (tx) => {
+      await tx.order.update({ where: { id: order.id }, data: { status: "CANCELLED", events: { create: { status: "CANCELLED", note: "Card payment could not be started" } } } });
+      await releaseCoupon(tx, order.id);
+    });
     return { ok: false, error: "payment" };
   }
 }

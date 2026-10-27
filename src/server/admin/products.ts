@@ -1,5 +1,6 @@
 import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
+import { fromUaeInput, toUaeInput } from "@/lib/uae-time";
 import { ProductInput, slugify, type ProductInputT, type ProductStatus, type SaveProductResult } from "@/lib/admin/product-input";
 import { db } from "../db";
 import { audit, type Actor } from "./audit";
@@ -64,6 +65,9 @@ export async function getProductForEdit(id: number): Promise<(ProductInputT & { 
     stock: p.stock,
     tags: p.tags,
     subscribePct: p.subscribePct,
+    flashPct: p.flashPct,
+    flashStartsAt: toUaeInput(p.flashStartsAt),
+    flashEndsAt: toUaeInput(p.flashEndsAt),
     tiers: p.tiers.map((t) => ({ minQty: t.minQty, pct: t.pct })),
     variants: p.variants.map((v) => ({ labelEn: v.labelEn, labelAr: v.labelAr, price: Number(v.price) })),
     images: p.images.map((i) => ({ url: i.url, width: i.width, height: i.height })),
@@ -92,7 +96,7 @@ export async function getEditorOptions() {
   };
 }
 
-const KNOWN_ERRORS = new Set(["slug", "taken", "compareAt", "tiers", "required"]);
+const KNOWN_ERRORS = new Set(["slug", "taken", "compareAt", "tiers", "required", "endBeforeStart"]);
 
 /** Zod issues → { field: translation key } (over-long text → "tooLong", other unknown issues → "required"). */
 function zodErrors(error: { issues: { path: PropertyKey[]; message: string; code: string; origin?: string }[] }) {
@@ -144,6 +148,9 @@ export async function saveProduct(actor: Actor, raw: unknown): Promise<SaveProdu
     stock: v.stock,
     tags: v.tags,
     subscribePct: v.subscribePct,
+    flashPct: v.flashPct,
+    flashStartsAt: v.flashPct ? fromUaeInput(v.flashStartsAt) : null,
+    flashEndsAt: v.flashPct ? fromUaeInput(v.flashEndsAt) : null,
     discountPct: v.compareAt ? Math.round((1 - v.price / v.compareAt) * 100) : 0,
     popularity: existing ? existing.reviewCount * Number(existing.rating) : 0,
   };
@@ -279,6 +286,10 @@ export async function importProductsCsv(actor: Actor, text: string, apply: boole
         stock: Number(get("stock")),
         tags: get("tags") ? get("tags").split("|").map((t) => t.trim().toUpperCase()) : [],
         subscribePct: get("subscribe_pct") ? Number(get("subscribe_pct")) : null,
+        // Flash deals are managed in the editor; an import keeps whatever is set.
+        flashPct: existing?.flashPct ?? null,
+        flashStartsAt: toUaeInput(existing?.flashStartsAt),
+        flashEndsAt: toUaeInput(existing?.flashEndsAt),
         tiers: /^(yes|true|1)$/i.test(get("multibuy")) ? existing?.tiers.length ? existing.tiers.map((t) => ({ minQty: t.minQty, pct: t.pct })) : DEFAULT_TIERS : [],
         variants: existing?.variants.map((o) => ({ labelEn: o.labelEn, labelAr: o.labelAr, price: Number(o.price) })) ?? [],
         images: existing?.images.map((i) => ({ url: i.url, width: i.width, height: i.height })) ?? [],

@@ -15,7 +15,7 @@ type Item = {
   lineTotal: unknown;
   subWeeks: number | null;
 };
-type Totals = { itemsTotal: unknown; discount: unknown; deliveryFee: unknown; total: unknown; vatAmount: unknown };
+type Totals = { itemsTotal: unknown; discount: unknown; deliveryFee: unknown; total: unknown; vatAmount: unknown; couponCode?: string | null; couponDiscount?: unknown };
 
 /** Items + totals block shared by admin order page, invoice and the customer's order page. */
 export async function OrderItemsTable({ items, totals, compact }: { items: Item[]; totals: Totals; compact?: boolean }) {
@@ -64,7 +64,10 @@ export async function OrderItemsTable({ items, totals, compact }: { items: Item[
       <dl className="ms-auto mt-3 max-w-xs space-y-1.5 border-t border-line pt-3 text-sm">
         <div className="flex justify-between"><dt className="text-ink-600">{t("itemsTotal")}</dt><dd className="tabular-nums">{fmt(totals.itemsTotal)}</dd></div>
         {discount > 0 && <div className="flex justify-between text-success"><dt>{t("discount")}</dt><dd className="tabular-nums">−{fmt(discount)}</dd></div>}
-        <div className="flex justify-between"><dt className="text-ink-600">{t("deliveryFee")}</dt><dd className="tabular-nums">{delivery ? fmt(delivery) : t("free")}</dd></div>
+        {totals.couponCode && Number(totals.couponDiscount) > 0 && (
+          <div className="flex justify-between text-success"><dt>{t("promo", { code: totals.couponCode })}</dt><dd className="tabular-nums">−{fmt(totals.couponDiscount)}</dd></div>
+        )}
+        <div className="flex justify-between"><dt className="text-ink-600">{t("deliveryFee")}{totals.couponCode && !Number(totals.couponDiscount) && <span className="ms-1 text-xs">({totals.couponCode})</span>}</dt><dd className="tabular-nums">{delivery ? fmt(delivery) : t("free")}</dd></div>
         <div className="flex justify-between border-t border-line pt-1.5 text-base font-extrabold"><dt>{t("total")}</dt><dd className="tabular-nums">{fmt(totals.total)}</dd></div>
         <div className="flex justify-between text-xs text-ink-500"><dt>{t("vat")}</dt><dd className="tabular-nums">{fmt(totals.vatAmount)}</dd></div>
       </dl>

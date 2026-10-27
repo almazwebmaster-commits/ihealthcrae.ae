@@ -11,6 +11,7 @@ import type {
   SortKey,
   Subcategory,
 } from "@/lib/catalog-types";
+import { flashLive } from "@/lib/promotions";
 import type { TintKey } from "@/lib/tints";
 import { db } from "./db";
 
@@ -29,7 +30,14 @@ type ProductRow = Prisma.ProductGetPayload<{ include: typeof productInclude }>;
 
 const num = (d: Prisma.Decimal | null | undefined) => (d == null ? undefined : Number(d));
 
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
 function toProduct(r: ProductRow): Product {
+  // A live flash deal lowers every price; the regular price becomes the "was" price.
+  const flash = flashLive(r) ? r.flashPct! : 0;
+  const cut = (n: number) => (flash ? round2(n * (1 - flash / 100)) : n);
+  const tags = r.tags.map((t) => t.toLowerCase() as ProductTag);
+  if (flash && !tags.includes("deal")) tags.push("deal");
   return {
     id: r.id,
     slug: r.slug,
@@ -44,14 +52,15 @@ function toProduct(r: ProductRow): Product {
     categoryTint: r.category.tint as TintKey,
     sub: r.subcategory.slug,
     subName: { en: r.subcategory.nameEn, ar: r.subcategory.nameAr },
-    price: Number(r.price),
-    was: num(r.compareAt),
+    price: cut(Number(r.price)),
+    was: flash ? Math.max(Number(r.price), num(r.compareAt) ?? 0) : num(r.compareAt),
+    flashEndsAt: flash ? r.flashEndsAt!.toISOString() : undefined,
     rating: Number(r.rating),
     reviews: r.reviewCount,
     stock: r.stock,
-    tags: r.tags.map((t) => t.toLowerCase() as ProductTag),
+    tags,
     options: r.variants.length
-      ? r.variants.map((v) => ({ label: { en: v.labelEn, ar: v.labelAr }, price: Number(v.price) }))
+      ? r.variants.map((v) => ({ label: { en: v.labelEn, ar: v.labelAr }, price: cut(Number(v.price)) }))
       : undefined,
     subscribe: r.subscribePct ?? undefined,
     tiers: r.tiers.length ? r.tiers.map((t) => ({ qty: t.minQty, pct: t.pct })) : undefined,
@@ -135,7 +144,11 @@ const orderBy: Record<SortKey, Prisma.ProductOrderByWithRelationInput[]> = {
 function contextWhere(q: ProductQuery): Prisma.ProductWhereInput {
   const and: Prisma.ProductWhereInput[] = [{ status: "ACTIVE" }];
   if (q.category) and.push({ OR: [{ category: { slug: q.category } }, { subcategory: { slug: q.category } }] });
-  if (q.tag) and.push({ tags: { has: q.tag.toUpperCase() as Uppercase<ProductTag> } });
+  if (q.tag === "deal") {
+    // Deals = products tagged DEAL plus any live flash deal.
+    const now = new Date();
+    and.push({ OR: [{ tags: { has: "DEAL" } }, { flashPct: { not: null }, flashEndsAt: { gt: now }, OR: [{ flashStartsAt: null }, { flashStartsAt: { lte: now } }] }] });
+  } else if (q.tag) and.push({ tags: { has: q.tag.toUpperCase() as Uppercase<ProductTag> } });
   if (q.subscribable) and.push({ subscribePct: { not: null } });
   if (q.multibuy) and.push({ tiers: { some: {} } });
   const text = q.q?.trim();
