@@ -68,7 +68,13 @@ export default async function AdminOrderPage({ params }: PageProps<"/[locale]/ad
                 <p className="font-semibold">{order.fullName}</p>
                 <p dir="ltr" className="text-start"><a href={`mailto:${order.email}`} className="text-brand-700 hover:underline">{order.email}</a></p>
                 <p dir="ltr" className="text-start"><a href={`tel:${order.phone}`} className="hover:underline">{formatUaePhone(order.phone)}</a></p>
-                <p className="pt-1 text-xs text-ink-500">{order.user ? `${t("account")}: ${order.user.name}` : t("guest")}</p>
+                <p className="pt-1 text-xs text-ink-500">
+                  {order.user ? (
+                    <Link href={`/admin/customers/${order.user.id}`} className="font-semibold text-brand-700 hover:underline">{`${t("account")}: ${order.user.name}`}</Link>
+                  ) : (
+                    t("guest")
+                  )}
+                </p>
                 <p className="pt-2 text-xs">
                   <span className="font-semibold">{t("payment")}:</span> {tPay(order.paymentMethod)} · {tPay(order.paymentStatus)}
                 </p>

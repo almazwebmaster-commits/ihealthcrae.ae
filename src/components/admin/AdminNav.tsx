@@ -1,12 +1,13 @@
 "use client";
 
-import { Boxes, LayoutDashboard, Package, ShoppingBag, Tag } from "lucide-react";
+import { Boxes, LayoutDashboard, Package, ShoppingBag, Tag, Users } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/admin", icon: LayoutDashboard, key: "dashboard" },
   { href: "/admin/orders", icon: ShoppingBag, key: "orders" },
+  { href: "/admin/customers", icon: Users, key: "customers" },
   { href: "/admin/products", icon: Package, key: "products" },
   { href: "/admin/inventory", icon: Boxes, key: "inventory" },
   { href: "/admin/promotions", icon: Tag, key: "promotions" },

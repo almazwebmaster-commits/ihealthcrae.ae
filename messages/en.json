@@ -333,7 +333,8 @@
       "termsRequired": "Please accept the terms to continue.",
       "tooMany": "Too many attempts. Please wait a minute and try again.",
       "invalidToken": "This link is invalid or has expired.",
-      "wrongPassword": "Your current password is incorrect."
+      "wrongPassword": "Your current password is incorrect.",
+      "blocked": "This account has been blocked. Please contact customer support."
     },
     "welcomeNew": "Welcome to iHealthcare — your account is ready."
   },
@@ -444,7 +445,8 @@
       "signOut": "Sign out",
       "admin": "Admin",
       "promotions": "Promotions",
-      "inventory": "Inventory"
+      "inventory": "Inventory",
+      "customers": "Customers"
     },
     "dashboard": {
       "title": "Dashboard",
@@ -926,6 +928,81 @@
       "totalUnits": "Total units",
       "packedBy": "Packed by",
       "checkedBy": "Checked by"
+    },
+    "customers": {
+      "title": "Customers",
+      "results": "{count, plural, one {# customer} other {# customers}}",
+      "detailTitle": "Customer",
+      "tabs": {
+        "accounts": "Accounts",
+        "blocked": "Blocked",
+        "guests": "Guest checkouts"
+      },
+      "search": "Search name, email or phone",
+      "empty": "No customers match.",
+      "emptyGuests": "No guest orders match.",
+      "previous": "Previous",
+      "next": "Next",
+      "active": "Active",
+      "blocked": "Blocked",
+      "back": "Customers",
+      "col": {
+        "customer": "Customer",
+        "phone": "Phone",
+        "joined": "Joined",
+        "orders": "Orders",
+        "spent": "Spent",
+        "lastOrder": "Last order",
+        "status": "Status",
+        "emirate": "Emirate",
+        "order": "Order",
+        "date": "Date",
+        "items": "Items",
+        "payment": "Payment",
+        "total": "Total"
+      },
+      "ordersCount": "Orders",
+      "spent": "Total spent",
+      "aov": "Average order",
+      "lastOrder": "Last order",
+      "guestOrders": "+{count} as a guest",
+      "orders": "Orders",
+      "noOrders": "No orders yet.",
+      "seeGuestOrders": "See {count, plural, one {# guest order} other {# guest orders}} with this email →",
+      "subscriptions": "Subscribe & save",
+      "every": "Every {weeks} weeks",
+      "nextDelivery": "Next {date}",
+      "sub": {
+        "ACTIVE": "Active",
+        "PAUSED": "Paused",
+        "CANCELLED": "Cancelled"
+      },
+      "profile": "Profile",
+      "phone": "Phone",
+      "joined": "Joined",
+      "emailStatus": "Email",
+      "verified": "Verified",
+      "notVerified": "Not verified",
+      "language": "Language",
+      "wishlist": "{count, plural, =0 {Nothing in wishlist} one {# item in wishlist} other {# items in wishlist}}",
+      "addresses": "Saved addresses",
+      "default": "Default",
+      "noAddresses": "No saved addresses.",
+      "access": "Account access",
+      "activeNotice": "The customer can sign in and order.",
+      "block": "Block customer",
+      "blockExplain": "Blocking signs the customer out on every device and stops them signing in. Their orders are not affected.",
+      "reason": "Reason",
+      "reasonPlaceholder": "Internal note, e.g. repeated refused COD deliveries",
+      "confirmBlock": "Block customer",
+      "cancel": "Cancel",
+      "blockedNotice": "This customer is blocked and cannot sign in.",
+      "unblock": "Unblock customer",
+      "staffNote": "This is a staff account — manage it on the Staff page.",
+      "errors": {
+        "notCustomer": "Staff accounts can't be blocked here.",
+        "notFound": "Customer not found."
+      }
     }
   },
   "Checkout": {

@@ -18,6 +18,8 @@ export function authErrorKey(error: { code?: string; status?: number } | null | 
       return "invalidToken";
     case "INVALID_PASSWORD":
       return "wrongPassword";
+    case "BANNED_USER":
+      return "blocked";
     default:
       return "generic";
   }
