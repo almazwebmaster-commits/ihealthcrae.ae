@@ -76,6 +76,8 @@ model Product {
   /// Strike-through "was" price; null when not on sale
   compareAt     Decimal?      @db.Decimal(10, 2)
   stock         Int           @default(0)
+  /// "Low stock" when stock is at or below this (per product)
+  lowStockAt    Int           @default(5)
   tags          ProductTag[]
 
   /// Subscribe & save discount (%); null = not eligible
@@ -104,6 +106,7 @@ model Product {
   orderItems    OrderItem[]
   subscriptions Subscription[]
   redirects     ProductRedirect[]
+  stockMovements StockMovement[]
 
   @@index([flashEndsAt])
   @@index([status, categoryId])
@@ -517,5 +520,37 @@ model CouponRedemption {
   createdAt DateTime @default(now())
 
   @@index([couponId, email])
+}
+
+// ── Inventory
+
+enum StockReason {
+  ORDER     // taken by a placed / paid order
+  CANCEL    // returned when an order is cancelled
+  RECEIVE   // goods received from a supplier
+  ADJUST    // stock count correction
+  RETURN    // customer return put back on the shelf
+  DAMAGE    // written off (damaged / expired)
+  EDIT      // changed in the product editor
+  IMPORT    // changed by a CSV import
+}
+
+model StockMovement {
+  id        Int         @id @default(autoincrement())
+  productId Int
+  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  /// +n received / returned, -n taken
+  change    Int
+  /// Stock after this movement
+  balance   Int
+  reason    StockReason
+  orderId   Int?
+  note      String?
+  actorId   String?
+  actorName String?
+  createdAt DateTime    @default(now())
+
+  @@index([productId, createdAt])
+  @@index([createdAt])
 }
 

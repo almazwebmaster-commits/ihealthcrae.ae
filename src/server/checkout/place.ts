@@ -12,6 +12,7 @@ import type { Session } from "../auth";
 import { ensureStripeCustomer, stripe, toFils } from "../stripe";
 import { CouponRaceError, redeemCoupon, releaseCoupon } from "../promotions";
 import type { CouponError } from "@/lib/promotions";
+import { recordMovement } from "../inventory";
 import { quoteCart, type QuoteIssue } from "./quote";
 import { receiptToken } from "./receipt-token";
 
@@ -58,12 +59,13 @@ class StockError extends Error {
 
 type Tx = Prisma.TransactionClient;
 
-/** Decrements stock only if enough is left (atomic per product). */
-async function takeStock(tx: Tx, items: { productId: number | null; slug: string; qty: number }[]) {
+/** Decrements stock only if enough is left (atomic per product) and logs it against the order. */
+async function takeStock(tx: Tx, orderId: number, items: { productId: number | null; slug: string; qty: number }[]) {
   for (const i of items) {
     if (!i.productId) continue;
     const r = await tx.product.updateMany({ where: { id: i.productId, stock: { gte: i.qty } }, data: { stock: { decrement: i.qty } } });
     if (r.count === 0) throw new StockError(i.slug);
+    await recordMovement(tx, { productId: i.productId, change: -i.qty, reason: "ORDER", orderId });
   }
 }
 
@@ -105,7 +107,6 @@ export async function placeOrder(raw: unknown, session: Session | null): Promise
   let order;
   try {
     order = await db.$transaction(async (tx) => {
-      if (cod) await takeStock(tx, items); // card orders take stock once payment succeeds
       const created = await tx.order.create({
         data: {
           number: `TMP-${crypto.randomUUID()}`,
@@ -136,6 +137,7 @@ export async function placeOrder(raw: unknown, session: Session | null): Promise
           events: { create: { status: cod ? "PLACED" : "PENDING_PAYMENT", note: cod ? "Cash on delivery" : "Awaiting card payment" } },
         },
       });
+      if (cod) await takeStock(tx, created.id, items); // card orders take stock once payment succeeds
       if (quote.coupon) {
         // Benefit = money off the items, or the delivery fee a free-delivery code waived.
         const waived = quote.coupon.type === "FREE_DELIVERY" && quote.subtotal < FREE_DELIVERY_THRESHOLD ? STANDARD_DELIVERY_FEE : 0;
@@ -223,7 +225,7 @@ export async function finalizeCardOrder(paymentIntentId: string) {
     const flip = await tx.order.updateMany({ where: { id: order.id, status: "PENDING_PAYMENT" }, data: { status: "PLACED", paymentStatus: "PAID" } });
     if (flip.count === 0) return false;
     try {
-      await takeStock(tx, order.items);
+      await takeStock(tx, order.id, order.items);
     } catch (e) {
       if (!(e instanceof StockError)) throw e;
       // Paid but short on stock: keep the order, flag it for staff.

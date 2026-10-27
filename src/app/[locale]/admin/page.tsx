@@ -1,7 +1,7 @@
-import { AlertTriangle, Banknote, ClipboardList, ShoppingBag, TrendingUp, type LucideIcon } from "lucide-react";
+import { AlertTriangle, Banknote, ClipboardList, ShoppingBag, TrendingUp } from "lucide-react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import { AdminHeader, OrderStatusBadge } from "@/components/admin/ui";
+import { AdminHeader, OrderStatusBadge, Stat } from "@/components/admin/ui";
 import { Box, BoxHeader } from "@/components/ui/Box";
 import { Link } from "@/i18n/navigation";
 import { formatPrice, tr } from "@/lib/i18n-utils";
@@ -13,22 +13,6 @@ import { dashboardStats } from "@/server/admin/orders";
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin">): Promise<Metadata> {
   const t = await getTranslations({ locale: (await params).locale, namespace: "AdminUI.dashboard" });
   return { title: t("title") };
-}
-
-function Stat({ icon: Icon, label, value, sub, href, warn }: { icon: LucideIcon; label: string; value: string; sub?: string; href?: string; warn?: boolean }) {
-  const body = (
-    <Box className={cn("flex h-full items-center gap-4 p-4", href && "hover:border-ink-400")}>
-      <span className={cn("inline-flex size-11 shrink-0 items-center justify-center rounded-sm", warn ? "bg-sale-50 text-sale" : "bg-brand-50 text-brand-700")}>
-        <Icon className="size-5" aria-hidden />
-      </span>
-      <span className="min-w-0">
-        <span className="block text-xl font-extrabold leading-tight tabular-nums 2xl:text-2xl">{value}</span>
-        <span className="block text-xs text-ink-600">{label}</span>
-        {sub && <span className="block text-xs text-ink-500">{sub}</span>}
-      </span>
-    </Box>
-  );
-  return href ? <Link href={href}>{body}</Link> : body;
 }
 
 export default async function AdminDashboard({ params }: PageProps<"/[locale]/admin">) {
@@ -51,7 +35,7 @@ export default async function AdminDashboard({ params }: PageProps<"/[locale]/ad
         <Stat icon={TrendingUp} label={t("revenue7")} value={fmt(s.revenue7)} sub={t("orders7", { count: s.orders7 })} />
         <Stat icon={ClipboardList} label={t("openOrders")} value={String(s.open)} href="/admin/orders?status=open" warn={s.open > 0} />
         <Stat icon={Banknote} label={t("codToCollect")} value={fmt(s.codToCollect)} href="/admin/orders?status=open&payment=COD" />
-        <Stat icon={AlertTriangle} label={t("lowStock")} value={String(s.lowStock)} href="/admin/products?lowStock=1" warn={s.lowStock > 0} />
+        <Stat icon={AlertTriangle} label={t("lowStock")} value={String(s.lowStock)} href="/admin/inventory?filter=low" warn={s.lowStock > 0} />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
@@ -78,7 +62,7 @@ export default async function AdminDashboard({ params }: PageProps<"/[locale]/ad
             <ul className="divide-y divide-line text-sm">
               {s.lowStockList.map((p) => (
                 <li key={p.id}>
-                  <Link href={`/admin/products/${p.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-surface">
+                  <Link href={`/admin/inventory/${p.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-surface">
                     <span className="min-w-0 flex-1 truncate">{tr({ en: p.nameEn, ar: p.nameAr }, locale)}</span>
                     <span className={cn("font-bold tabular-nums", p.stock === 0 ? "text-sale" : "text-accent-700")}>{t("left", { count: p.stock })}</span>
                   </Link>

@@ -25,7 +25,7 @@ type Initial = ProductInputT & { sku?: string; rating?: number; reviews?: number
 
 const EMPTY: Initial = {
   slug: "", status: "DRAFT", nameEn: "", nameAr: "", descEn: "", descAr: "", brandSlug: "", newBrand: "",
-  subcategory: "", price: 0, compareAt: null, stock: 0, tags: [], subscribePct: null, flashPct: null, flashStartsAt: "", flashEndsAt: "", tiers: [], variants: [], images: [],
+  subcategory: "", price: 0, compareAt: null, stock: 0, lowStockAt: 5, tags: [], subscribePct: null, flashPct: null, flashStartsAt: "", flashEndsAt: "", tiers: [], variants: [], images: [],
 };
 
 const select = "h-10 w-full rounded-sm border border-line-strong bg-white px-3 text-sm focus:border-brand-500 focus:outline-none aria-invalid:border-sale";
@@ -329,6 +329,14 @@ export function ProductEditor({ initial, options }: { initial?: Initial; options
             <Label htmlFor="stock">{t("stock")}</Label>
             <Input id="stock" inputMode="numeric" dir="ltr" value={stock} aria-invalid={!!errors.stock} onChange={(e) => setStock(e.target.value)} />
             {err("stock")}
+            <div className="mt-2 flex items-center gap-2">
+              <Label htmlFor="lowStockAt" className="mb-0 shrink-0 text-xs font-normal text-ink-600">{t("lowStockAt")}</Label>
+              <Input id="lowStockAt" inputMode="numeric" dir="ltr" className="h-8 w-20" value={v.lowStockAt}
+                onChange={(e) => set("lowStockAt", Math.max(0, Math.trunc(Number(e.target.value) || 0)))} />
+            </div>
+            {!isNew && (
+              <Link href={`/admin/inventory/${start.id}`} className="mt-1 inline-block text-xs font-semibold text-brand-700 hover:underline">{t("stockHistory")}</Link>
+            )}
           </div>
         </div>
         {start.reviews ? <p className="mt-3 text-xs text-ink-500">{t("rating", { rating: start.rating ?? 0, count: start.reviews })}</p> : null}

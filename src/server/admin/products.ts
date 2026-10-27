@@ -3,6 +3,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { fromUaeInput, toUaeInput } from "@/lib/uae-time";
 import { ProductInput, slugify, type ProductInputT, type ProductStatus, type SaveProductResult } from "@/lib/admin/product-input";
 import { db } from "../db";
+import { recordMovement } from "../inventory";
 import { audit, type Actor } from "./audit";
 
 const PER_PAGE = 25;
@@ -14,7 +15,7 @@ export async function listProducts(query: ProductListQuery) {
   if (query.status && ["DRAFT", "ACTIVE", "ARCHIVED"].includes(query.status)) and.push({ status: query.status as ProductStatus });
   else and.push({ status: { not: "ARCHIVED" } });
   if (query.category) and.push({ OR: [{ category: { slug: query.category } }, { subcategory: { slug: query.category } }] });
-  if (query.lowStock) and.push({ stock: { lt: 5 } });
+  if (query.lowStock) and.push({ stock: { lte: db.product.fields.lowStockAt } });
   const text = query.q?.trim();
   if (text) {
     const like = { contains: text, mode: "insensitive" as const };
@@ -63,6 +64,7 @@ export async function getProductForEdit(id: number): Promise<(ProductInputT & { 
     price: Number(p.price),
     compareAt: p.compareAt == null ? null : Number(p.compareAt),
     stock: p.stock,
+    lowStockAt: p.lowStockAt,
     tags: p.tags,
     subscribePct: p.subscribePct,
     flashPct: p.flashPct,
@@ -108,7 +110,7 @@ function zodErrors(error: { issues: { path: PropertyKey[]; message: string; code
   return errors;
 }
 
-export async function saveProduct(actor: Actor, raw: unknown): Promise<SaveProductResult> {
+export async function saveProduct(actor: Actor, raw: unknown, source: "EDIT" | "IMPORT" = "EDIT"): Promise<SaveProductResult> {
   const parsed = ProductInput.safeParse(raw);
   if (!parsed.success) return { ok: false, errors: zodErrors(parsed.error) };
   const v = parsed.data;
@@ -130,7 +132,7 @@ export async function saveProduct(actor: Actor, raw: unknown): Promise<SaveProdu
     brandId = b.id;
   }
 
-  const existing = v.id ? await db.product.findUnique({ where: { id: v.id }, select: { sku: true, slug: true, rating: true, reviewCount: true } }) : null;
+  const existing = v.id ? await db.product.findUnique({ where: { id: v.id }, select: { sku: true, slug: true, stock: true, rating: true, reviewCount: true } }) : null;
   if (v.id && !existing) return { ok: false, errors: { form: "notFound" } };
 
   const data = {
@@ -146,6 +148,7 @@ export async function saveProduct(actor: Actor, raw: unknown): Promise<SaveProdu
     price: v.price,
     compareAt: v.compareAt,
     stock: v.stock,
+    lowStockAt: v.lowStockAt,
     tags: v.tags,
     subscribePct: v.subscribePct,
     flashPct: v.flashPct,
@@ -180,6 +183,9 @@ export async function saveProduct(actor: Actor, raw: unknown): Promise<SaveProdu
       await tx.productImage.createMany({
         data: v.images.map((img, i) => ({ productId: product.id, ...img, altEn: v.nameEn, altAr: v.nameAr, position: i })),
       });
+    // The editor and imports set stock directly; log the difference so the history adds up.
+    const change = v.stock - (existing?.stock ?? 0);
+    if (change) await recordMovement(tx, { productId: product.id, change, reason: source, note: existing ? null : "Initial stock", actor });
     return product.id;
   });
 
@@ -284,6 +290,7 @@ export async function importProductsCsv(actor: Actor, text: string, apply: boole
         price: Number(get("price")),
         compareAt: get("compare_at") ? Number(get("compare_at")) : null,
         stock: Number(get("stock")),
+        lowStockAt: existing?.lowStockAt ?? 5,
         tags: get("tags") ? get("tags").split("|").map((t) => t.trim().toUpperCase()) : [],
         subscribePct: get("subscribe_pct") ? Number(get("subscribe_pct")) : null,
         // Flash deals are managed in the editor; an import keeps whatever is set.
@@ -305,7 +312,7 @@ export async function importProductsCsv(actor: Actor, text: string, apply: boole
         continue;
       }
       if (apply) {
-        const r = await saveProduct(actor, input);
+        const r = await saveProduct(actor, input, "IMPORT");
         if (!r.ok) {
           result.errors.push({ row: rowNo, message: Object.entries(r.errors).map(([k, v]) => `${k}: ${v}`).join("; ") });
           continue;

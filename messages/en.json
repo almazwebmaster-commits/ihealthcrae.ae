@@ -443,7 +443,8 @@
       "viewStore": "View store",
       "signOut": "Sign out",
       "admin": "Admin",
-      "promotions": "Promotions"
+      "promotions": "Promotions",
+      "inventory": "Inventory"
     },
     "dashboard": {
       "title": "Dashboard",
@@ -642,7 +643,9 @@
           "ended": "Ended",
           "noEnd": "Set an end time"
         }
-      }
+      },
+      "lowStockAt": "Low-stock alert at",
+      "stockHistory": "Stock history →"
     },
     "importer": {
       "title": "Import products from CSV",
@@ -718,7 +721,8 @@
       "express": "Express",
       "standard": "Standard",
       "renewal": "Subscription renewal #{id}",
-      "promo": "Promo code {code}"
+      "promo": "Promo code {code}",
+      "packingSlip": "Packing slip"
     },
     "invoice": {
       "title": "Tax invoice",
@@ -828,6 +832,100 @@
         "endBeforeStart": "Must be after the start.",
         "date": "Enter a valid date."
       }
+    },
+    "inventory": {
+      "title": "Inventory",
+      "subtitle": "Stock levels, low-stock alerts and every stock change.",
+      "units": "Units in stock",
+      "skus": "{count, plural, one {# product} other {# products}}",
+      "value": "Stock value",
+      "valueHint": "At current selling prices",
+      "lowCount": "Low stock",
+      "outCount": "Out of stock",
+      "filter": "Stock filter",
+      "filters": {
+        "all": "All",
+        "low": "Low stock",
+        "out": "Out of stock"
+      },
+      "search": "Search name, SKU or brand",
+      "results": "{count, plural, one {# product} other {# products}}",
+      "empty": "No products match.",
+      "previous": "Previous",
+      "next": "Next",
+      "draft": "Draft",
+      "col": {
+        "product": "Product",
+        "stock": "In stock",
+        "lowAt": "Alert at",
+        "state": "Status",
+        "value": "Value",
+        "date": "Date",
+        "reason": "Reason",
+        "change": "Change",
+        "balance": "Stock after",
+        "details": "Details",
+        "by": "By"
+      },
+      "state": {
+        "ok": "In stock",
+        "low": "Low",
+        "out": "Out of stock"
+      },
+      "adjust": "Adjust",
+      "close": "Close",
+      "reason": "Reason",
+      "reasons": {
+        "ORDER": "Order",
+        "CANCEL": "Order cancelled",
+        "RECEIVE": "Goods received",
+        "ADJUST": "Stock count",
+        "RETURN": "Customer return",
+        "DAMAGE": "Damaged / expired",
+        "EDIT": "Product edit",
+        "IMPORT": "CSV import"
+      },
+      "quantity": "Quantity",
+      "counted": "Counted on shelf",
+      "note": "Note",
+      "notePlaceholder": "e.g. supplier invoice no.",
+      "lowStockAt": "Low-stock alert at",
+      "preview": "Stock {from} → {to} ({change})",
+      "save": "Save",
+      "saving": "Saving…",
+      "errors": {
+        "invalid": "Check the quantity.",
+        "negative": "There isn't enough stock to remove that many.",
+        "notFound": "Product not found."
+      },
+      "back": "Inventory",
+      "historyTitle": "Stock history",
+      "history": "Stock history",
+      "inStock": "In stock",
+      "lowAtHint": "Low-stock alert at {count}",
+      "adjustTitle": "Adjust stock",
+      "editProduct": "Edit product",
+      "noHistory": "No stock changes recorded yet.",
+      "customer": "Customer",
+      "system": "System"
+    },
+    "packingSlip": {
+      "title": "Packing slip",
+      "print": "Print",
+      "express": "Express",
+      "standard": "Standard",
+      "shipTo": "Deliver to",
+      "collectCash": "Collect cash on delivery",
+      "prepaid": "Prepaid — nothing to collect",
+      "customerNote": "Customer note",
+      "picked": "Picked",
+      "item": "Item",
+      "sku": "SKU",
+      "qty": "Qty",
+      "subscription": "Subscribe & save",
+      "totalUnits": "Total units",
+      "packedBy": "Packed by",
+      "checkedBy": "Checked by"
     }
   },
   "Checkout": {

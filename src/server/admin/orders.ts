@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { nextStatuses, openStatuses, orderStatuses, type OrderStatus } from "@/lib/orders";
 import { db } from "../db";
+import { countLowStock, lowStockProducts, recordMovement } from "../inventory";
 import { releaseCoupon } from "../promotions";
 import { stripe } from "../stripe";
 import { audit, type Actor } from "./audit";
@@ -78,7 +79,9 @@ export async function changeOrderStatus(actor: Actor, number: string, to: OrderS
     // Card orders awaiting payment never took stock, so only restock placed orders.
     if (to === "CANCELLED" && !order.isDemo && order.status !== "PENDING_PAYMENT") {
       for (const item of order.items) {
-        if (item.productId) await tx.product.update({ where: { id: item.productId }, data: { stock: { increment: item.qty } } });
+        if (!item.productId) continue;
+        await tx.product.update({ where: { id: item.productId }, data: { stock: { increment: item.qty } } });
+        await recordMovement(tx, { productId: item.productId, change: item.qty, reason: "CANCEL", orderId: order.id, actor });
       }
     }
     if (to === "CANCELLED") await releaseCoupon(tx, order.id);
@@ -117,9 +120,9 @@ export async function dashboardStats() {
     db.order.count({ where: { placedAt: { gte: startOfToday }, ...counted } }),
     db.order.aggregate({ where: { placedAt: { gte: weekAgo }, ...counted }, _sum: { total: true }, _count: { _all: true } }),
     db.order.count({ where: { status: { in: openStatuses } } }),
-    db.product.count({ where: { status: "ACTIVE", stock: { lt: 5 } } }),
+    countLowStock(),
     db.order.findMany({ orderBy: { placedAt: "desc" }, take: 8 }),
-    db.product.findMany({ where: { status: "ACTIVE", stock: { lt: 5 } }, orderBy: { stock: "asc" }, take: 6, select: { id: true, nameEn: true, nameAr: true, stock: true, sku: true } }),
+    lowStockProducts(6),
     db.order.aggregate({ where: { paymentMethod: "COD", paymentStatus: "UNPAID", status: { in: openStatuses } }, _sum: { total: true } }),
   ]);
   return {

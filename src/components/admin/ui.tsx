@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Box } from "@/components/ui/Box";
 import { Link } from "@/i18n/navigation";
@@ -68,3 +69,20 @@ export function qs(params: Record<string, string | number | undefined | null>) {
 }
 
 export const field = "h-10 w-full rounded-sm border border-line-strong bg-white px-3 text-sm focus:border-brand-500 focus:outline-none";
+
+/** Dashboard-style figure card; links when href is set. */
+export function Stat({ icon: Icon, label, value, sub, href, warn }: { icon: LucideIcon; label: string; value: string; sub?: string; href?: string; warn?: boolean }) {
+  const body = (
+    <Box className={cn("flex h-full items-center gap-4 p-4", href && "hover:border-ink-400")}>
+      <span className={cn("inline-flex size-11 shrink-0 items-center justify-center rounded-sm", warn ? "bg-sale-50 text-sale" : "bg-brand-50 text-brand-700")}>
+        <Icon className="size-5" aria-hidden />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-xl font-extrabold leading-tight tabular-nums 2xl:text-2xl">{value}</span>
+        <span className="block text-xs text-ink-600">{label}</span>
+        {sub && <span className="block text-xs text-ink-500">{sub}</span>}
+      </span>
+    </Box>
+  );
+  return href ? <Link href={href}>{body}</Link> : body;
+}

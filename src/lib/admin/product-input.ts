@@ -36,6 +36,7 @@ export const ProductInput = z
     price: money,
     compareAt: money.nullable(),
     stock: z.number().int().min(0).max(1_000_000),
+    lowStockAt: z.number().int().min(0).max(100_000).default(5),
     tags: z.array(z.enum(productTags)).max(4),
     subscribePct: z.number().int().min(1).max(50).nullable(),
     /** Flash deal: % off between two UAE-time datetime-local values (start optional = now) */

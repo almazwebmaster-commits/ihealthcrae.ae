@@ -1,4 +1,4 @@
-import { Printer } from "lucide-react";
+import { PackageCheck, Printer } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
@@ -43,6 +43,10 @@ export default async function AdminOrderPage({ params }: PageProps<"/[locale]/ad
           <>
             {order.isDemo && <Badge tone="neutral">{tOrders("demo")}</Badge>}
             <OrderStatusBadge status={status} label={tStatus(status)} />
+            <Link href={`/admin/orders/${order.number}/packing-slip`} className={buttonClass("outline", "sm")}>
+              <PackageCheck className="size-3.5" aria-hidden />
+              {t("packingSlip")}
+            </Link>
             <Link href={`/admin/orders/${order.number}/invoice`} className={buttonClass("outline", "sm")}>
               <Printer className="size-3.5" aria-hidden />
               {t("invoice")}
