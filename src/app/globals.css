@@ -73,6 +73,9 @@
 
   --container-site: 1440px;
 
+  /* Chart series (validated for colour-blind separation and contrast on white) */
+  --color-chart-teal: #008f82;
+  --color-chart-amber: #d97706;
 }
 
 @layer base {

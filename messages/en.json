@@ -1200,6 +1200,35 @@
         "noArabic": "Arabic missing"
       },
       "legend": "Products without a photo are left out of the feed. The others are included but may perform better once fixed. Products don't have barcodes (GTIN) yet, so they're sent with “identifier exists: no”."
+    },
+    "sales": {
+      "title": "Sales",
+      "period": "Period",
+      "lastDays": "{days} days",
+      "vsPrevious": "vs previous {days} days",
+      "revenue": "Revenue",
+      "orders": "Orders",
+      "aov": "Average order value",
+      "units": "Units sold",
+      "revenuePerDay": "Revenue per day",
+      "byPayment": "Revenue by payment method",
+      "topProducts": "Top products",
+      "chartLabel": "Revenue per day for the last {days} days",
+      "ordersCount": "{count, plural, one {# order} other {# orders}}",
+      "showTable": "Show as table",
+      "noSales": "No sales in this period yet.",
+      "method": {
+        "CARD": "Card",
+        "COD": "Cash on delivery"
+      },
+      "col": {
+        "day": "Day",
+        "orders": "Orders",
+        "revenue": "Revenue",
+        "product": "Product",
+        "units": "Units"
+      },
+      "noPrevious": "No sales in the {days} days before"
     }
   },
   "Checkout": {
