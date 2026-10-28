@@ -21,7 +21,7 @@ export function AuthCard({
       <div className="w-full max-w-md space-y-3">
         <Box className="p-6 sm:p-8">
           <Link href="/" className="mb-6 inline-block" aria-label="iHealthcare.ae">
-            <Logo className="[&_svg]:size-7 [&>span:last-child]:text-xl" />
+            <Logo className="h-8" />
           </Link>
           <h1 className="text-2xl font-extrabold text-ink-900">{title}</h1>
           {subtitle && <p className="mt-1 text-sm text-ink-600">{subtitle}</p>}

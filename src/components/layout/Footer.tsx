@@ -63,7 +63,7 @@ export async function Footer() {
 
       <div className="container-site grid grid-cols-2 gap-8 py-10 md:grid-cols-3 lg:grid-cols-5">
         <div className="col-span-2 md:col-span-3 lg:col-span-2">
-          <Logo tone="dark" />
+          <Logo tone="dark" className="h-9" />
           <p className="mt-3 max-w-xs text-brand-200">{tBrand("tagline")}</p>
           <p className="mt-4 inline-flex items-start gap-2 text-xs text-brand-200">
             <ShieldCheck className="size-4 shrink-0 text-accent-500" aria-hidden />

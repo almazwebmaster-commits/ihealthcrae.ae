@@ -57,7 +57,7 @@ export function MobileMenu({
         )}
       >
         <div className="flex items-center justify-between border-b border-line bg-brand-50 px-4 py-3">
-          <Logo showTld={false} className="[&_svg]:size-7 [&>span:last-child]:text-xl" />
+          <Logo showTld={false} className="h-7" />
           <button
             type="button"
             aria-label={closeLabel}

@@ -38,7 +38,7 @@ export async function Header() {
         />
 
         <Link href="/" className="shrink-0" aria-label="iHealthcare.ae">
-          <Logo className="[&_svg]:size-8 [&>span:last-child]:text-xl sm:[&>span:last-child]:text-2xl" />
+          <Logo className="h-7 sm:h-8 lg:h-9" />
         </Link>
 
         <SearchBox categories={searchCategories} className="hidden min-w-0 flex-1 md:block" />

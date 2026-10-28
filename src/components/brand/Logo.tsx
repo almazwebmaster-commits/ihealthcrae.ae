@@ -2,16 +2,41 @@ import { cn } from "@/lib/utils";
 
 type Tone = "light" | "dark";
 
-const markColors: Record<Tone, { arm: string; core: string; dot: string }> = {
-  // light = for use on light backgrounds
-  light: { arm: "#07806E", core: "#12A38B", dot: "#FFB400" },
-  // dark = for use on brand/ink backgrounds
-  dark: { arm: "#FFFFFF", core: "#9EDDCC", dot: "#FFB400" },
+/** Amber of the cross that dots the "i" */
+const CROSS = "#F5B700";
+
+// Wordmark "ihealthcare.ae" (concept A), letters as outlines so it renders identically everywhere.
+const HEALTH = [
+  "M45.62 150H65.78V88.12H45.62Z",
+  "M104.76 116.37C104.76 107.93 108.87 104 115.25 104C121.64 104 125.33 107.99 125.33 115.31V150H145.49V111.09C145.49 95.86 137.64 86.78 124.22 86.78C115.14 86.78 108.92 90.88 104.76 97.68V62.7H84.61V150H104.76Z",
+  "M183.63 151.41C199.28 151.41 211.76 142.68 214.04 130.2H195.94C194.47 134.3 190.26 136.88 184.34 136.88C176.37 136.88 171.68 131.89 171.45 124.04H214.51V118.59C214.51 99.84 201.68 86.72 183.11 86.72C164.77 86.72 151.76 100.2 151.76 119.06C151.76 137.93 164.65 151.41 183.63 151.41ZM171.56 111.97C172.44 105.47 176.84 101.6 183.63 101.6C190.37 101.6 194.83 105.47 195.7 111.97Z",
+  "M240.53 151.05C249.26 151.05 254.83 148.01 258.52 141.33H258.75V150H278.44V108.34C278.44 94.69 268.54 86.78 250.55 86.78C232.62 86.78 222.48 94.75 221.61 108.16H240.36C240.77 103.95 244.22 101.25 249.85 101.25C255.18 101.25 258.46 103.77 258.46 107.46V107.75C258.46 111.45 254.42 112.32 243.34 113.26C230.16 114.32 219.32 118.83 219.32 132.71C219.32 145.02 228.17 151.05 240.53 151.05ZM246.68 137.87C241.76 137.87 238.42 135.59 238.42 131.78C238.42 127.73 242.29 125.51 247.68 124.69C252.66 123.87 256.47 123.11 258.64 122.11V127.73C258.64 133.83 253.42 137.87 246.68 137.87Z",
+  "M307.45 62.7H287.29V150H307.45Z",
+  "M355.85 88.12H343.13V71.25H322.92V88.12H312.37V103.71H322.92V132.6C322.92 144.61 329.6 150 344.42 150H355.85V134.41H348.88C344.36 134.41 343.13 133.18 343.13 129.2V103.71H355.85Z",
+  "M381.69 116.37C381.69 107.93 385.79 104 392.18 104C398.57 104 402.26 107.99 402.26 115.31V150H422.41V111.09C422.41 95.86 414.56 86.78 401.14 86.78C392.06 86.78 385.85 90.88 381.69 97.68V62.7H361.53V150H381.69Z",
+];
+const CARE = [
+  "M460.68 151.41C478.2 151.41 490.62 140.62 491.03 125.51H471.52C470.76 131.54 467.06 135.41 461.09 135.41C453.59 135.41 449.13 129.2 449.13 119.06C449.13 108.93 453.53 102.71 461.09 102.71C467.06 102.71 470.93 106.52 471.58 112.44H491.03C490.15 97.27 477.9 86.72 460.68 86.72C441.52 86.72 428.69 99.84 428.69 119.06C428.69 138.34 441.52 151.41 460.68 151.41Z",
+  "M517.05 151.05C525.78 151.05 531.34 148.01 535.04 141.33H535.27V150H554.96V108.34C554.96 94.69 545.05 86.78 527.07 86.78C509.14 86.78 499 94.75 498.12 108.16H516.87C517.28 103.95 520.74 101.25 526.36 101.25C531.7 101.25 534.98 103.77 534.98 107.46V107.75C534.98 111.45 530.93 112.32 519.86 113.26C506.68 114.32 495.84 118.83 495.84 132.71C495.84 145.02 504.68 151.05 517.05 151.05ZM523.2 137.87C518.28 137.87 514.94 135.59 514.94 131.78C514.94 127.73 518.8 125.51 524.2 124.69C529.18 123.87 532.98 123.11 535.15 122.11V127.73C535.15 133.83 529.94 137.87 523.2 137.87Z",
+  "M563.81 150H583.96V118.3C583.96 109.51 588.94 104.47 596.15 104.47C599.08 104.47 602.65 104.59 604.12 104.65V88.01C602.48 87.95 600.78 87.89 598.61 87.89C590.35 87.89 585.72 91.17 583.49 99.02H583.32V88.12H563.81Z",
+  "M637.64 151.41C653.28 151.41 665.76 142.68 668.05 130.2H649.94C648.48 134.3 644.26 136.88 638.34 136.88C630.37 136.88 625.68 131.89 625.45 124.04H668.52V118.59C668.52 99.84 655.68 86.72 637.11 86.72C618.77 86.72 605.76 100.2 605.76 119.06C605.76 137.93 618.65 151.41 637.64 151.41ZM625.57 111.97C626.45 105.47 630.84 101.6 637.64 101.6C644.38 101.6 648.83 105.47 649.71 111.97Z",
+];
+const TLD = [
+  "M680.88 150.44C683 150.44 684.7 148.74 684.7 146.63C684.7 144.51 683 142.81 680.88 142.81C678.77 142.81 677.07 144.51 677.07 146.63C677.07 148.74 678.77 150.44 680.88 150.44Z",
+  "M697.52 150.42C701.75 150.42 703.94 148.65 705.17 146.33H705.27V150H711.38V132.28C711.38 126.87 707.36 123.5 700.6 123.5C693.8 123.5 689.57 126.92 689.28 132.08H695.26C695.43 129.89 697.45 128.32 700.47 128.32C703.45 128.32 705.22 129.89 705.22 132.11V132.31C705.22 134.08 703.57 134.15 698.75 134.69C693.39 135.26 688.54 136.71 688.54 142.62C688.54 147.81 692.35 150.42 697.52 150.42ZM699.05 145.82C696.34 145.82 694.59 144.61 694.59 142.57C694.59 140.21 696.86 139.25 699.51 138.85C702.07 138.46 704.48 138.06 705.25 137.57V140.38C705.25 143.4 703.11 145.82 699.05 145.82Z",
+  "M728.33 150.59C734.41 150.59 739.23 147.07 740.22 141.98H734.41C733.7 144.19 731.6 145.69 728.48 145.69C724.3 145.69 721.88 142.86 721.74 138.63H740.54V136.93C740.54 128.96 735.57 123.42 728.09 123.42C720.8 123.42 715.66 129.13 715.66 137.03C715.66 144.91 720.53 150.59 728.33 150.59ZM721.79 134.35C722.2 130.63 724.59 128.34 728.18 128.34C731.78 128.34 734.19 130.63 734.58 134.35Z",
+];
+
+const colors: Record<Tone, { health: string; care: string; tld: string }> = {
+  // light = on white / light backgrounds
+  light: { health: "#0B6B5D", care: "#13222E", tld: "#0B6B5D" },
+  // dark = on deep green / ink backgrounds
+  dark: { health: "#FFFFFF", care: "#A8E0D2", tld: "#FFFFFF" },
 };
 
 /**
- * Mosaic cross: five soft tiles forming a medical cross.
- * The top tile is amber — it doubles as the dot of the "i".
+ * App icon: a rounded tile with the "i" and its amber cross.
+ * Light tone is the teal tile; dark tone is the white tile (for dark backgrounds).
  */
 export function LogoMark({
   tone = "light",
@@ -20,22 +45,18 @@ export function LogoMark({
   tone?: Tone;
   className?: string;
 }) {
-  const c = markColors[tone];
+  const dark = tone === "dark";
   return (
-    <svg
-      viewBox="0 0 44 44"
-      aria-hidden="true"
-      className={cn("size-9 shrink-0", className)}
-    >
-      <rect x="16" y="0" width="12" height="12" rx="3.5" fill={c.dot} />
-      <rect x="0" y="16" width="12" height="12" rx="3.5" fill={c.arm} />
-      <rect x="16" y="16" width="12" height="12" rx="3.5" fill={c.core} />
-      <rect x="32" y="16" width="12" height="12" rx="3.5" fill={c.arm} />
-      <rect x="16" y="32" width="12" height="12" rx="3.5" fill={c.arm} />
+    <svg viewBox="0 0 512 512" aria-hidden="true" className={cn("size-9 shrink-0", className)}>
+      <rect width="512" height="512" rx="112" fill={dark ? "#FFFFFF" : "#0B6B5D"} />
+      <path d="M224.09 421.95H287.91V226.01H224.09Z" fill={dark ? "#0B6B5D" : "#FFFFFF"} />
+      <rect x="200.15" y="125.8" width="111.7" height="40.21" rx="20.11" fill={CROSS} />
+      <rect x="235.89" y="90.05" width="40.21" height="111.7" rx="20.11" fill={CROSS} />
     </svg>
   );
 }
 
+/** Full wordmark. Size it by height (e.g. `h-8`); the width follows. */
 export function Logo({
   tone = "light",
   showTld = true,
@@ -45,37 +66,19 @@ export function Logo({
   showTld?: boolean;
   className?: string;
 }) {
-  const dark = tone === "dark";
+  const c = colors[tone];
   return (
-    <span
-      dir="ltr"
-      className={cn("inline-flex items-center gap-2 select-none", className)}
+    <svg
+      viewBox={showTld ? "36 43 706 110" : "36 43 634 110"}
+      role="img"
       aria-label="iHealthcare.ae"
+      className={cn("h-8 w-auto shrink-0", className)}
     >
-      <LogoMark tone={tone} />
-      <span className="flex items-baseline font-display text-2xl leading-none tracking-tight">
-        <span className={cn("font-extrabold", dark ? "text-accent-500" : "text-accent-600")}>i</span>
-        <span
-          className={cn("font-extrabold", dark ? "text-white" : "text-brand-800")}
-        >
-          Health
-        </span>
-        <span
-          className={cn("font-semibold", dark ? "text-brand-100" : "text-brand-600")}
-        >
-          care
-        </span>
-        {showTld && (
-          <span
-            className={cn(
-              "ms-1.5 self-center rounded-full px-1.5 py-0.5 font-sans text-[10px] font-bold uppercase tracking-wider",
-              dark ? "bg-white/15 text-white" : "bg-brand-50 text-brand-800",
-            )}
-          >
-            .ae
-          </span>
-        )}
-      </span>
-    </span>
+      {HEALTH.map((d) => <path key={d.slice(0, 12)} d={d} fill={c.health} />)}
+      {CARE.map((d) => <path key={d.slice(0, 12)} d={d} fill={c.care} />)}
+      <rect x="38.07" y="56.48" width="35.27" height="12.7" rx="6.35" fill={CROSS} />
+      <rect x="49.35" y="45.19" width="12.7" height="35.27" rx="6.35" fill={CROSS} />
+      {showTld && TLD.map((d) => <path key={d.slice(0, 12)} d={d} fill={c.tld} />)}
+    </svg>
   );
 }
