@@ -70,6 +70,7 @@ function toProduct(r: ProductRow): Product {
       height: i.height,
       alt: i.altEn ? { en: i.altEn, ar: i.altAr ?? i.altEn } : undefined,
     })),
+    video: r.videoUrl ?? undefined,
   };
 }
 

@@ -1,5 +1,7 @@
 import { PackageSearch, X } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
+import { Fragment } from "react";
+import { SponsoredVideo } from "@/components/ads/SponsoredVideo";
 import { Breadcrumbs } from "@/components/catalog/Breadcrumbs";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { buttonClass } from "@/components/ui/Button";
@@ -8,6 +10,7 @@ import { sortKeys, type Category, type ProductQuery } from "@/lib/catalog-types"
 import { formatNumber, formatPrice } from "@/lib/i18n-utils";
 import { buildQuery, parseListingParams, withoutValue, type SearchParams } from "@/lib/listing";
 import { cn } from "@/lib/utils";
+import { getVideoAd } from "@/server/ads";
 import { getBrands, queryProducts } from "@/server/catalog";
 import { FilterSidebar } from "./FilterSidebar";
 import { SortSelect } from "./SortSelect";
@@ -41,7 +44,7 @@ export async function ListingView({
   const locale = await getLocale();
   const t = await getTranslations("Listing");
   const query = parseListingParams(searchParams);
-  const [result, brands] = await Promise.all([queryProducts({ ...query, ...fixed }), getBrands()]);
+  const [result, brands, videoAd] = await Promise.all([queryProducts({ ...query, ...fixed }), getBrands(), getVideoAd()]);
   const action = `/${locale}${basePath}`;
   const brandName = new Map(brands.map((b) => [b.slug, b.name]));
 
@@ -57,6 +60,14 @@ export async function ListingView({
     ...(query.multibuy && !fixed.multibuy ? [{ label: t("multibuy"), href: buildQuery(searchParams, { multi: null, page: null }) }] : []),
   ];
   const resetHref = basePath + buildQuery(query.q ? { q: query.q } : {});
+
+  // Sponsored video: first results page only, when the results share the ad product's category or brand.
+  // It spans the grid after 12 products (whole rows on 2/3/4 columns), or after the last one on short pages.
+  const ad =
+    videoAd?.inListings && (query.page ?? 1) === 1 && result.items.some((p) => p.category === videoAd.product.category || p.brand === videoAd.product.brand)
+      ? videoAd
+      : null;
+  const adAfter = Math.min(12, result.items.length);
 
   return (
     <div className="container-site space-y-4 py-4">
@@ -113,10 +124,17 @@ export async function ListingView({
 
           {result.items.length ? (
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-              {result.items.map((p) => (
-                <li key={p.slug}>
-                  <ProductCard product={p} />
-                </li>
+              {result.items.map((p, i) => (
+                <Fragment key={p.slug}>
+                  <li>
+                    <ProductCard product={p} />
+                  </li>
+                  {ad && i === adAfter - 1 && (
+                    <li className="col-span-full">
+                      <SponsoredVideo ad={ad} />
+                    </li>
+                  )}
+                </Fragment>
               ))}
             </ul>
           ) : (

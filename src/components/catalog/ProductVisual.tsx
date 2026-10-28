@@ -20,6 +20,8 @@ export function ProductVisual({
 }) {
   const image = product.images[index];
   if (!image) return <ProductArt product={product} view={index} className={className} />;
+  // Packshots are square (uploads are made 1200×1200); anything else is a lifestyle photo that fills the tile.
+  const lifestyle = Math.abs(image.width / image.height - 1) > 0.1;
 
   return (
     <div className={cn("relative aspect-square overflow-hidden bg-white", className)}>
@@ -31,7 +33,7 @@ export function ProductVisual({
         priority={priority}
         draggable={false}
         // multiply lets white packshot backgrounds take on the tile colour
-        className="object-contain mix-blend-multiply"
+        className={lifestyle ? "object-cover" : "object-contain mix-blend-multiply"}
       />
     </div>
   );

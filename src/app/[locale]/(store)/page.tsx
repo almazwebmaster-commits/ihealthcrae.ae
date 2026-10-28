@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { SponsoredVideo } from "@/components/ads/SponsoredVideo";
 import { CategoryIcon } from "@/components/catalog/CategoryIcon";
 import { Countdown } from "@/components/catalog/Countdown";
 import { Price } from "@/components/catalog/Price";
@@ -21,16 +22,19 @@ import { ProductCard } from "@/components/catalog/ProductCard";
 import { ProductRail } from "@/components/catalog/ProductRail";
 import { ProductVisual } from "@/components/catalog/ProductVisual";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
+import { LoopVideo } from "@/components/home/LoopVideo";
 import { QuadBox } from "@/components/home/QuadBox";
 import { buttonClass } from "@/components/ui/Button";
 import { Link } from "@/i18n/navigation";
 import type { Product } from "@/lib/catalog-types";
+import { loopClip } from "@/lib/cloudinary-video";
 import { tr } from "@/lib/i18n-utils";
 import type { HomeSectionKey } from "@/lib/home-content";
 import { tintClasses } from "@/lib/tints";
 import { cn } from "@/lib/utils";
 import { Fragment } from "react";
 import { featuredBrands, getCategories, getProduct, maxDiscount, topProducts } from "@/server/catalog";
+import { getVideoAd } from "@/server/ads";
 import { getHomeContent } from "@/server/home-content";
 
 // Homepage content comes from the database; re-render at most every 5 minutes.
@@ -70,7 +74,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const quadCategories = [...new Set([...home.quadRow1, ...home.quadRow2])];
   const pct = (slug: string) => (slug ? maxDiscount(slug) : Promise.resolve(0));
 
-  const [categories, quadLists, deals, bestSellers, newArrivals, brands, heroPcts, promoPct, spotlightList] =
+  const [categories, quadLists, deals, bestSellers, newArrivals, brands, heroPcts, promoPct, spotlightList, videoAd] =
     await Promise.all([
       getCategories(),
       Promise.all(quadCategories.map((slug) => topProducts({ category: slug, inStock: true }, 4))),
@@ -81,6 +85,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       Promise.all(heroSlides.map((s) => pct(s.category))),
       pct(home.promo.category),
       Promise.all(home.spotlights.map((slug) => (slug ? getProduct(slug) : undefined))),
+      getVideoAd(),
     ]);
 
   const rail = { prevLabel: tc("previous"), nextLabel: tc("next"), viewAllLabel: tc("viewAll") };
@@ -96,6 +101,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const ar = loc === "ar";
   const withPct = (text: string, n: number) => text.replace("{pct}", String(n));
   const promoImage = (ar && home.promo.imageRtl) || home.promo.image;
+  const promoVideo = home.promo.video ? loopClip(home.promo.video.src, home.promo.video.start, home.promo.video.end) : null;
+  // Under the video: the photo, or else the clip's first frame (also what reduced-motion visitors see).
+  const promoBase = promoImage?.src ?? promoVideo?.poster;
 
   const blocks: Record<HomeSectionKey, React.ReactNode> = {
     hero: (
@@ -257,13 +265,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           href={home.promo.href}
           className={cn(
             "group relative flex min-h-64 flex-col justify-end overflow-hidden rounded-2xl p-8 text-ink-900 sm:col-span-2 lg:row-span-2",
-            promoImage ? "bg-pastel-sky max-sm:aspect-square" : "bg-pastel-blush",
+            promoBase ? "bg-pastel-sky max-sm:aspect-square" : "bg-pastel-blush",
+            promoVideo && "text-white",
           )}
         >
           {/* Photos keep the product to the right, so crop from the left when the tile is taller than wide */}
-          {promoImage ? (
+          {promoBase ? (
             <Image
-              src={promoImage.src}
+              src={promoBase}
               alt=""
               fill
               sizes="(min-width: 1024px) 680px, (min-width: 640px) 100vw, 100vw"
@@ -276,7 +285,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               ))}
             </div>
           )}
-          <span className={cn("relative text-xs font-bold uppercase tracking-widest", promoImage ? "text-brand-700" : "text-pastel-blush-ink")}>{ar ? home.promo.eyebrowAr : home.promo.eyebrowEn}</span>
+          {promoVideo && (
+            <>
+              <LoopVideo src={promoVideo.video} poster={promoVideo.poster} className="absolute inset-0 size-full object-cover motion-reduce:hidden" />
+              {/* Keeps the white text readable over moving footage */}
+              <div aria-hidden className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-ink-950/85 via-ink-950/45 to-transparent" />
+            </>
+          )}
+          <span className={cn("relative text-xs font-bold uppercase tracking-widest", promoVideo ? "text-brand-200" : promoImage ? "text-brand-700" : "text-pastel-blush-ink")}>{ar ? home.promo.eyebrowAr : home.promo.eyebrowEn}</span>
           <h2 className="relative mt-2 max-w-sm text-3xl font-extrabold leading-tight">{withPct(ar ? home.promo.titleAr : home.promo.titleEn, promoPct)}</h2>
           <span className={buttonClass("primary", "lg", "relative mt-6 self-start")}>
             {t("shopAll")}
@@ -296,6 +312,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         ))}
       </ProductRail>
     ),
+
+    videoAd: videoAd ? <SponsoredVideo ad={videoAd} /> : null,
 
     brands: (
       <section>

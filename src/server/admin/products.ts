@@ -73,6 +73,7 @@ export async function getProductForEdit(id: number): Promise<(ProductInputT & { 
     tiers: p.tiers.map((t) => ({ minQty: t.minQty, pct: t.pct })),
     variants: p.variants.map((v) => ({ labelEn: v.labelEn, labelAr: v.labelAr, price: Number(v.price) })),
     images: p.images.map((i) => ({ url: i.url, width: i.width, height: i.height })),
+    videoUrl: p.videoUrl,
     rating: Number(p.rating),
     reviews: p.reviewCount,
   };
@@ -156,6 +157,7 @@ export async function saveProduct(actor: Actor, raw: unknown, source: "EDIT" | "
     flashEndsAt: v.flashPct ? fromUaeInput(v.flashEndsAt) : null,
     discountPct: v.compareAt ? Math.round((1 - v.price / v.compareAt) * 100) : 0,
     popularity: existing ? existing.reviewCount * Number(existing.rating) : 0,
+    videoUrl: v.videoUrl,
   };
 
   const id = await db.$transaction(async (tx) => {
@@ -300,6 +302,8 @@ export async function importProductsCsv(actor: Actor, text: string, apply: boole
         tiers: /^(yes|true|1)$/i.test(get("multibuy")) ? existing?.tiers.length ? existing.tiers.map((t) => ({ minQty: t.minQty, pct: t.pct })) : DEFAULT_TIERS : [],
         variants: existing?.variants.map((o) => ({ labelEn: o.labelEn, labelAr: o.labelAr, price: Number(o.price) })) ?? [],
         images: existing?.images.map((i) => ({ url: i.url, width: i.width, height: i.height })) ?? [],
+        // Videos are managed in the editor; an import keeps whatever is set.
+        videoUrl: existing?.videoUrl ?? null,
       };
       const check = ProductInput.safeParse(input);
       if (!check.success) {

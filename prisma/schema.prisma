@@ -91,6 +91,9 @@ model Product {
   rating        Decimal       @default(0) @db.Decimal(2, 1)
   reviewCount   Int           @default(0)
 
+  /// Cloudinary video (original upload URL); the gallery derives sized versions from it
+  videoUrl      String?
+
   // Sort helpers, recomputed on every write (see src/server/catalog-write.ts)
   popularity    Float         @default(0)
   discountPct   Int           @default(0)

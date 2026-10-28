@@ -40,6 +40,8 @@ export type Product = {
   /** Buy more, save more tiers, ascending by qty. */
   tiers?: QuantityTier[];
   images: ProductImage[];
+  /** Cloudinary video (original address); see src/lib/cloudinary-video.ts */
+  video?: string;
 };
 
 export type Subcategory = { slug: string; name: L };

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { VIDEO_SRC } from "@/lib/cloudinary-video";
 import { IMAGE_SRC } from "@/lib/image-src";
 import { fromUaeInput } from "@/lib/uae-time";
 
@@ -51,6 +52,8 @@ export const ProductInput = z
     images: z
       .array(z.object({ url: z.string().regex(IMAGE_SRC), width: z.number().int().positive(), height: z.number().int().positive() }))
       .max(12),
+    /** Cloudinary video shown last in the gallery */
+    videoUrl: z.string().regex(VIDEO_SRC).nullable().default(null),
   })
   .superRefine((v, ctx) => {
     if (!v.brandSlug && !v.newBrand) ctx.addIssue({ code: "custom", path: ["brandSlug"], message: "required" });

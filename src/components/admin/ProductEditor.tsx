@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState, useTransition } from "react";
 import { saveProductAction, setProductStatusAction } from "@/app/[locale]/admin/products/actions";
 import { ProductCopyAssistant } from "@/components/admin/ProductCopyAssistant";
+import { VideoField } from "@/components/admin/VideoField";
 import { FormMessage } from "@/components/auth/AuthCard";
 import { Badge } from "@/components/ui/Badge";
 import { Box } from "@/components/ui/Box";
@@ -25,7 +26,7 @@ type Initial = ProductInputT & { sku?: string; rating?: number; reviews?: number
 
 const EMPTY: Initial = {
   slug: "", status: "DRAFT", nameEn: "", nameAr: "", descEn: "", descAr: "", brandSlug: "", newBrand: "",
-  subcategory: "", price: 0, compareAt: null, stock: 0, lowStockAt: 5, tags: [], subscribePct: null, flashPct: null, flashStartsAt: "", flashEndsAt: "", tiers: [], variants: [], images: [],
+  subcategory: "", price: 0, compareAt: null, stock: 0, lowStockAt: 5, tags: [], subscribePct: null, flashPct: null, flashStartsAt: "", flashEndsAt: "", tiers: [], variants: [], images: [], videoUrl: null,
 };
 
 const select = "h-10 w-full rounded-sm border border-line-strong bg-white px-3 text-sm focus:border-brand-500 focus:outline-none aria-invalid:border-sale";
@@ -70,6 +71,7 @@ function NameLength({ text }: { text: string }) {
 
 export function ProductEditor({ initial, options }: { initial?: Initial; options: Options }) {
   const t = useTranslations("AdminUI.editor");
+  const tv = useTranslations("AdminUI.video");
   const tStatus = useTranslations("AdminUI.products.status");
   const locale = useLocale();
   const router = useRouter();
@@ -373,6 +375,10 @@ export function ProductEditor({ initial, options }: { initial?: Initial; options
             </li>
           )}
         </ul>
+      </Section>
+
+      <Section title={t("video")}>
+        <VideoField area="products" value={v.videoUrl} hint={tv("productHint")} onChange={(videoUrl) => setV((s) => ({ ...s, videoUrl }))} />
       </Section>
 
       <Section title={t("options")} hint={t("optionsHint")}>

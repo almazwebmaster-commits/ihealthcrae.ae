@@ -16,6 +16,22 @@ export function cloudinaryConfig(url = process.env.CLOUDINARY_URL): CloudinaryCo
  * content hash, so uploading the same image twice reuses the existing file.
  */
 export async function uploadToCloudinary(file: Buffer, folder: string, publicId: string, cfg: CloudinaryConfig) {
+  const data = await signedUpload("image", new Blob([new Uint8Array(file)], { type: "image/webp" }), folder, publicId, cfg);
+  return data.secure_url;
+}
+
+/**
+ * Imports a video from a public web address: Cloudinary downloads it itself, so large files never
+ * pass through our server (Vercel caps request bodies at 4.5 MB).
+ */
+export async function importVideoToCloudinary(url: string, publicId: string, cfg: CloudinaryConfig) {
+  const data = await signedUpload("video", url, "videos", publicId, cfg);
+  return { src: data.secure_url, width: data.width ?? 0, height: data.height ?? 0, duration: data.duration ?? 0 };
+}
+
+type UploadResult = { secure_url: string; width?: number; height?: number; duration?: number };
+
+async function signedUpload(kind: "image" | "video", file: Blob | string, folder: string, publicId: string, cfg: CloudinaryConfig) {
   const params: Record<string, string> = {
     folder: `ihealthcare/${folder}`,
     overwrite: "false",
@@ -30,10 +46,11 @@ export async function uploadToCloudinary(file: Buffer, folder: string, publicId:
   for (const [k, v] of Object.entries(params)) body.append(k, v);
   body.append("api_key", cfg.key);
   body.append("signature", createHash("sha1").update(toSign + cfg.secret).digest("hex"));
-  body.append("file", new Blob([new Uint8Array(file)], { type: "image/webp" }), `${publicId}.webp`);
+  if (typeof file === "string") body.append("file", file);
+  else body.append("file", file, `${publicId}.webp`);
 
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cfg.cloud}/image/upload`, { method: "POST", body });
-  const data = (await res.json().catch(() => null)) as { secure_url?: string; error?: { message?: string } } | null;
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cfg.cloud}/${kind}/upload`, { method: "POST", body });
+  const data = (await res.json().catch(() => null)) as (UploadResult & { error?: { message?: string } }) | null;
   if (!res.ok || !data?.secure_url) throw new Error(`Cloudinary upload failed (${res.status}): ${data?.error?.message ?? "no response"}`);
-  return data.secure_url;
+  return data;
 }

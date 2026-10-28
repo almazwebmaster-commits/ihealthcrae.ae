@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { heroSlides } from "@/data/home";
+import { VIDEO_SRC } from "@/lib/cloudinary-video";
 import { IMAGE_SRC } from "@/lib/image-src";
 import { slotImage } from "@/lib/images";
 
 /** Homepage blocks staff can reorder and switch on/off, in their default order. */
-export const homeSectionKeys = ["hero", "categories", "savings", "mosaic1", "deals", "bento", "bestSellers", "brands", "mosaic2", "newArrivals", "trust"] as const;
+export const homeSectionKeys = ["hero", "categories", "savings", "mosaic1", "deals", "bento", "bestSellers", "videoAd", "brands", "mosaic2", "newArrivals", "trust"] as const;
 export type HomeSectionKey = (typeof homeSectionKeys)[number];
 
 export const heroThemes = ["teal", "rose", "ink", "amber"] as const;
@@ -35,6 +36,18 @@ export const HeroSlideInput = z.object({
   mobile: image,
 });
 
+const clip = z.object({ src: z.string().regex(VIDEO_SRC), start: z.number().int().min(0).max(3600), end: z.number().int().min(0).max(3600) });
+
+/** Sponsored video ad (Amazon Sponsored Brands style): a clip next to the product it advertises. */
+const VideoAdInput = z.object({
+  video: clip.nullable().default(null),
+  productSlug: z.string().max(120).default(""),
+  headlineEn: text(120).default(""),
+  headlineAr: text(120).default(""),
+  /** Also show it in category and search results that include the product's category or brand */
+  inListings: z.boolean().default(true),
+});
+
 export const HomeContentInput = z.object({
   sections: z.array(z.object({ key: z.enum(homeSectionKeys), enabled: z.boolean() })).length(homeSectionKeys.length),
   heroSlides: z.array(HeroSlideInput).min(1).max(8),
@@ -52,7 +65,10 @@ export const HomeContentInput = z.object({
     /** Square background photo; text sits on its lower part. Arabic falls back to `image`. */
     image: image.default(null),
     imageRtl: image.default(null),
+    /** Silent looping clip played over the photo (Cloudinary video, from `start` to `end` seconds) */
+    video: clip.nullable().default(null),
   }),
+  videoAd: VideoAdInput.default({ video: null, productSlug: "", headlineEn: "", headlineAr: "", inListings: true }),
 });
 
 export type HomeContent = z.infer<typeof HomeContentInput>;
@@ -85,18 +101,36 @@ export function defaultHomeContent(): HomeContent {
       category: "beauty-skincare",
       image: null,
       imageRtl: null,
+      video: null,
     },
+    videoAd: { video: null, productSlug: "", headlineEn: "", headlineAr: "", inListings: true },
   };
 }
 
-/** Stored content can be from an older version: keep what is valid, fill the rest from defaults. */
+/**
+ * Stored content can be from an older version: keep what is valid, fill the rest from defaults.
+ * Each part is checked on its own, so one outdated value never throws away the rest of the page.
+ */
 export function normalizeHomeContent(raw: unknown): HomeContent {
   const def = defaultHomeContent();
-  const parsed = HomeContentInput.partial().safeParse(raw);
-  if (!parsed.success) return def;
-  const v = { ...def, ...Object.fromEntries(Object.entries(parsed.data).filter(([, x]) => x !== undefined)) } as HomeContent;
-  // Sections: keep saved order, append any blocks added in a later version.
-  const known = v.sections.filter((s) => (homeSectionKeys as readonly string[]).includes(s.key));
-  for (const key of homeSectionKeys) if (!known.some((s) => s.key === key)) known.push({ key, enabled: true });
-  return { ...v, sections: known };
+  const stored = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const v = { ...def };
+  for (const key of Object.keys(HomeContentInput.shape) as (keyof HomeContent)[]) {
+    if (key === "sections" || stored[key] === undefined) continue;
+    const parsed = HomeContentInput.shape[key].safeParse(stored[key]);
+    if (parsed.success) Object.assign(v, { [key]: parsed.data });
+  }
+  // Sections: keep the saved order and switches; a block added in a later version goes after the
+  // block that precedes it in the default order.
+  const saved = (Array.isArray(stored.sections) ? stored.sections : []).filter(
+    (s): s is { key: HomeSectionKey; enabled: boolean } =>
+      !!s && typeof s === "object" && (homeSectionKeys as readonly string[]).includes((s as { key?: string }).key ?? "") && typeof (s as { enabled?: unknown }).enabled === "boolean",
+  );
+  const sections = saved.filter((s, i) => saved.findIndex((x) => x.key === s.key) === i);
+  homeSectionKeys.forEach((key, i) => {
+    if (sections.some((s) => s.key === key)) return;
+    const after = i ? sections.findIndex((s) => s.key === homeSectionKeys[i - 1]) : -1;
+    sections.splice(after + 1, 0, { key, enabled: true });
+  });
+  return { ...v, sections };
 }

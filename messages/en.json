@@ -153,7 +153,10 @@
     "tierUpsell": "Add {more} more to save {pct}%",
     "noStacking": "Discounts don't combine — the best one is applied automatically.",
     "flashDeal": "Flash deal",
-    "flashEndsIn": "Ends in"
+    "flashEndsIn": "Ends in",
+    "video": "Video",
+    "playVideo": "Play video",
+    "videosTitle": "Product videos"
   },
   "Listing": {
     "home": "Home",
@@ -654,7 +657,8 @@
         }
       },
       "lowStockAt": "Low-stock alert at",
-      "stockHistory": "Stock history →"
+      "stockHistory": "Stock history →",
+      "video": "Video"
     },
     "importer": {
       "title": "Import products from CSV",
@@ -1097,6 +1101,10 @@
         "trust": {
           "name": "Trust strip",
           "hint": "Genuine, fast delivery, COD, secure, returns"
+        },
+        "videoAd": {
+          "name": "Sponsored video",
+          "hint": "Brand video ad beside its product (set it up below)"
         }
       },
       "shown": "Shown",
@@ -1154,7 +1162,8 @@
         "image": "Background photo",
         "imageHint": "Cropped to 1200 × 1200. Keep the lower part clear: the text sits there.",
         "imageRtl": "Background photo (Arabic)",
-        "imageRtlHint": "Optional; falls back to the photo above."
+        "imageRtlHint": "Optional; falls back to the photo above.",
+        "video": "Video"
       },
       "spotlights": "Spotlight products",
       "spotlight": "Spotlight {n}",
@@ -1175,6 +1184,17 @@
         "uploadType": "Only JPG, PNG, WebP or AVIF images.",
         "uploadSize": "Images must be under 10 MB.",
         "uploadStorage": "Couldn't save the image: image storage isn't set up or didn't respond. Nothing was uploaded — try again, or check the Cloudinary settings."
+      },
+      "videoAd": {
+        "title": "Sponsored video ad",
+        "hint": "A brand's video beside the product it advertises, like Amazon's sponsored brand videos. It plays muted while on screen; shoppers can turn the sound on.",
+        "product": "Advertised product",
+        "headlineEn": "Headline (English)",
+        "headlineAr": "Headline (Arabic)",
+        "inListings": "Also show in category and search results",
+        "inListingsHint": "Appears on the first results page when the results include this product's category or brand.",
+        "videoHint": "The clip loops between the start and end times below. 15–30 seconds works best.",
+        "needsVideo": "Add a video and pick a product to show the ad."
       }
     },
     "feed": {
@@ -1235,6 +1255,24 @@
         "units": "Units"
       },
       "noPrevious": "No sales in the {days} days before"
+    },
+    "video": {
+      "label": "Video web address (MP4)",
+      "replaceLabel": "Replace with another video (web address)",
+      "import": "Import video",
+      "importing": "Importing…",
+      "importingHint": "Copying the video to our image storage. Large videos can take up to a minute.",
+      "remove": "Remove video",
+      "productHint": "Shown last in the product gallery, with sound and play controls.",
+      "promoHint": "Plays silently on a loop over the photo; the photo shows while it loads and for visitors who turn off motion.",
+      "loopStart": "Loop from (seconds)",
+      "loopEnd": "Loop to (seconds)",
+      "loopHint": "Keep the loop short (10–30 seconds) so it loads fast on phones.",
+      "errors": {
+        "url": "Enter the full https:// address of the video file.",
+        "storage": "Image storage isn't set up (Cloudinary), so videos can't be imported.",
+        "import": "Couldn't import that video. Check that the address opens the video file itself and that it's under 100 MB."
+      }
     }
   },
   "Checkout": {
@@ -1344,5 +1382,13 @@
   "TabBar": {
     "home": "Home",
     "account": "Account"
+  },
+  "Ads": {
+    "sponsored": "Sponsored",
+    "sponsoredBy": "Sponsored by {brand}",
+    "shopBrand": "Shop {brand}",
+    "soundOn": "Turn sound on",
+    "soundOff": "Turn sound off",
+    "play": "Play video"
   }
 }

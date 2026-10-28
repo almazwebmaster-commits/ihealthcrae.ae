@@ -9,6 +9,7 @@ import { Rating } from "@/components/catalog/Rating";
 import { WishlistButton } from "@/components/catalog/WishlistButton";
 import { BuyBox } from "@/components/product/BuyBox";
 import { ProductGallery } from "@/components/product/ProductGallery";
+import { ProductVideos } from "@/components/product/ProductVideos";
 import { Badge } from "@/components/ui/Badge";
 import { Box, BoxHeader } from "@/components/ui/Box";
 import { Link } from "@/i18n/navigation";
@@ -83,7 +84,7 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/p/[sl
 
       <div className="grid gap-4 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          <ProductGallery product={product} viewLabel={t("image")} />
+          <ProductGallery product={product} viewLabel={t("image")} videoLabel={t("playVideo")} />
         </div>
 
         <div className="space-y-3 lg:col-span-4">
@@ -131,6 +132,15 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/p/[sl
           </div>
         </div>
       </div>
+
+      {product.video && (
+        <ProductVideos
+          src={product.video}
+          brand={product.brandName}
+          name={tr(product.name, locale)}
+          labels={{ title: t("videosTitle"), play: t("playVideo") }}
+        />
+      )}
 
       <div className="grid gap-4 lg:grid-cols-12">
         <Box className="lg:col-span-7">
