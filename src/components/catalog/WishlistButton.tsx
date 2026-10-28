@@ -34,7 +34,7 @@ export function WishlistButton({ slug, className }: { slug: string; className?: 
         void wishlist.toggle(slug);
       }}
       className={cn(
-        "inline-flex size-9 items-center justify-center rounded-sm border border-line bg-white/95 transition-colors hover:border-ink-400",
+        "inline-flex size-9 items-center justify-center rounded-full bg-white/95 shadow-[0_2px_8px_rgb(19_34_46/0.1)] transition-colors hover:bg-white",
         saved ? "text-sale" : "text-ink-600",
         className,
       )}

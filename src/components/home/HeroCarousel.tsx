@@ -28,7 +28,7 @@ export type HeroSlideView = {
 };
 
 const themes: Record<HeroTheme, { bg: string; text: string; sub: string; tile: string; dot: string; cta: "accent" | "dark" }> = {
-  teal: { bg: "bg-brand-700", text: "text-white", sub: "text-brand-100", tile: "bg-white", dot: "bg-accent-500", cta: "accent" },
+  teal: { bg: "bg-brand-800", text: "text-white", sub: "text-brand-100", tile: "bg-white", dot: "bg-accent-500", cta: "accent" },
   rose: { bg: "bg-rose-700", text: "text-white", sub: "text-rose-100", tile: "bg-white", dot: "bg-accent-400", cta: "accent" },
   ink: { bg: "bg-ink-900", text: "text-white", sub: "text-ink-300", tile: "bg-brand-400", dot: "bg-accent-500", cta: "accent" },
   amber: { bg: "bg-accent-500", text: "text-ink-900", sub: "text-ink-800", tile: "bg-white", dot: "bg-brand-700", cta: "dark" },
@@ -76,12 +76,12 @@ export function HeroCarousel({
   };
 
   const arrow =
-    "pointer-events-auto inline-flex size-11 items-center justify-center rounded-sm bg-white/90 text-ink-900 shadow-pop hover:bg-white active:bg-white";
+    "pointer-events-auto inline-flex size-11 items-center justify-center rounded-full bg-white/90 text-ink-900 shadow-pop hover:bg-white active:bg-white";
 
   return (
     <section
       aria-roledescription="carousel"
-      className="relative aspect-[4/5] touch-pan-y select-none overflow-hidden rounded-sm md:aspect-[21/9]"
+      className="relative aspect-[4/5] touch-pan-y select-none overflow-hidden rounded-2xl md:aspect-[21/9]"
       // Hover-pause is for mouse only: on iPad a "hover" from a tap can swallow the tap itself.
       onPointerEnter={(e) => e.pointerType === "mouse" && setPaused(true)}
       onPointerLeave={(e) => e.pointerType === "mouse" && setPaused(false)}
@@ -158,7 +158,7 @@ export function HeroCarousel({
                     <span
                       key={k}
                       className={cn(
-                        "flex size-20 items-center justify-center rounded-sm lg:size-24",
+                        "flex size-20 items-center justify-center rounded-2xl lg:size-24",
                         k === 4 ? th.dot : k % 2 ? `${th.tile} opacity-20` : `${th.tile} opacity-10`,
                       )}
                     >
@@ -189,7 +189,7 @@ export function HeroCarousel({
       </div>
 
       {/* Arrows sit in the bottom corner, clear of the headline (44px touch targets) */}
-      <div className="pointer-events-none absolute bottom-3 end-3 z-10 hidden gap-1.5 sm:flex">
+      <div className="pointer-events-none absolute bottom-4 end-4 z-10 hidden gap-2 sm:flex">
         <button type="button" aria-label={prevLabel} onClick={() => go(index - 1)} className={arrow}>
           {rtl ? <ChevronRight className="size-5" aria-hidden /> : <ChevronLeft className="size-5" aria-hidden />}
         </button>
@@ -211,7 +211,7 @@ export function HeroCarousel({
           >
             <span
               className={cn(
-                "block h-1.5 rounded-xs transition-all",
+                "block h-1.5 rounded-full transition-all",
                 i === index ? "w-8 bg-white" : "w-3 bg-white/50 group-hover:bg-white/80",
               )}
             />

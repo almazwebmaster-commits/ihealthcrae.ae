@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Heart, LayoutDashboard, Package, Repeat, UserRound } from "lucide-react";
+import { Heart, LayoutDashboard, Package, Repeat, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 const STAFF = new Set(["staff", "admin"]);
 
-/** Boxy account button: sign-in pitch when signed out, account shortcuts when signed in. */
+/** Account button: sign-in pitch when signed out, account shortcuts when signed in. */
 export function AccountMenu() {
   const t = useTranslations("Account");
   const { data, isPending } = useSession();
@@ -50,25 +50,28 @@ export function AccountMenu() {
         aria-haspopup="true"
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "inline-flex h-10 items-center gap-2 rounded-sm border border-white/25 ps-1 pe-2 text-white transition-colors hover:bg-white/10",
-          open && "bg-white/10",
+          "inline-flex h-12 min-w-12 flex-col items-center justify-center gap-0.5 rounded-lg px-2 text-ink-900 transition-colors hover:bg-surface-sunken",
+          open && "bg-surface-sunken",
         )}
       >
-        <span className="inline-flex size-8 items-center justify-center rounded-xs bg-accent-500 text-sm font-extrabold text-ink-900">
-          {user ? user.name.trim().charAt(0).toUpperCase() : <UserRound className="size-4.5" aria-hidden />}
-        </span>
-        <span className={cn("hidden max-w-28 truncate text-sm font-bold sm:inline", isPending && "opacity-0")}>
+        {user ? (
+          <span className="inline-flex size-6 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
+            {user.name.trim().charAt(0).toUpperCase()}
+          </span>
+        ) : (
+          <UserRound className="size-5.5" strokeWidth={1.9} aria-hidden />
+        )}
+        <span className={cn("hidden max-w-24 truncate text-xs font-medium lg:block", isPending && "opacity-0")}>
           {user ? t("hi", { name: firstName ?? "" }) : t("signIn")}
         </span>
-        <ChevronDown className={cn("hidden size-3.5 transition-transform sm:block", open && "rotate-180")} aria-hidden />
-        <span className="sr-only sm:hidden">{user ? t("myAccount") : t("signIn")}</span>
+        <span className="sr-only lg:hidden">{user ? t("myAccount") : t("signIn")}</span>
       </button>
 
       {open && (
-        <div className="absolute end-0 top-full z-50 mt-2 w-72 rounded-sm border border-line bg-white p-4 text-ink-900 shadow-pop">
+        <div className="absolute end-0 top-full z-50 mt-2 w-72 rounded-xl border border-line bg-white p-4 text-ink-900 shadow-pop">
           {user ? (
             <>
-              <p className="truncate text-base font-extrabold">{t("hi", { name: firstName ?? "" })}</p>
+              <p className="truncate font-display text-base font-extrabold">{t("hi", { name: firstName ?? "" })}</p>
               <p className="truncate text-xs text-ink-500" dir="ltr">{user.email}</p>
               <Link href="/account" onClick={close} className={buttonClass("primary", "md", "mt-3 w-full")}>
                 {t("myAccount")}
@@ -76,7 +79,7 @@ export function AccountMenu() {
             </>
           ) : (
             <>
-              <p className="text-base font-extrabold">{t("welcome")}</p>
+              <p className="font-display text-base font-extrabold">{t("welcome")}</p>
               <p className="mt-1 text-xs text-ink-600">{t("pitch")}</p>
               <Link href="/sign-in" onClick={close} className={buttonClass("primary", "md", "mt-3 w-full")}>
                 {t("signIn")}

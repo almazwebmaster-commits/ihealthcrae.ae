@@ -11,7 +11,7 @@ import { Box } from "@/components/ui/Box";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { Link, useRouter } from "@/i18n/navigation";
-import { heroThemes, type HeroSlideContent, type HomeContent } from "@/lib/home-content";
+import { heroThemes, type BannerKind, type HeroSlideContent, type HomeContent } from "@/lib/home-content";
 import { tr } from "@/lib/i18n-utils";
 import { cn } from "@/lib/utils";
 
@@ -51,7 +51,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 }
 
 /** One banner image slot: preview + upload/replace + remove. */
-function ImageSlot({ id, label, hint, image, kind, onChange }: { id: string; label: string; hint: string; image: Img; kind: "desktop" | "mobile"; onChange: (img: Img) => void }) {
+function ImageSlot({ id, label, hint, image, kind, onChange }: { id: string; label: string; hint: string; image: Img; kind: BannerKind; onChange: (img: Img) => void }) {
   const t = useTranslations("AdminUI.homepage");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -72,7 +72,7 @@ function ImageSlot({ id, label, hint, image, kind, onChange }: { id: string; lab
   return (
     <div>
       <p className="mb-1 text-sm font-semibold">{label}</p>
-      <div className={cn("relative overflow-hidden rounded-sm border border-dashed border-line-strong bg-surface", kind === "mobile" ? "aspect-[4/5] max-w-40" : "aspect-[21/9]")}>
+      <div className={cn("relative overflow-hidden rounded-sm border border-dashed border-line-strong bg-surface", kind === "mobile" ? "aspect-[4/5] max-w-40" : kind === "promo" ? "aspect-square max-w-48" : "aspect-[21/9]")}>
         {image ? <Image src={image.src} alt="" fill sizes="320px" className="object-cover" /> : <span className="absolute inset-0 flex items-center justify-center p-2 text-center text-xs text-ink-500">{t("noImage")}</span>}
       </div>
       <p className="mt-1 text-[11px] text-ink-500">{hint}</p>
@@ -296,6 +296,8 @@ export function HomeEditor({ initial, cats, products, savedInfo }: { initial: Ho
             <Input id="promo-href" dir="ltr" list="home-links" value={v.promo.href} onChange={(e) => change((s) => ({ ...s, promo: { ...s.promo, href: e.target.value.trim() } }))} />
           </div>
           {catSelect(v.promo.category, (val) => change((s) => ({ ...s, promo: { ...s.promo, category: val } })), "promo-category", t("promo.category"))}
+          <ImageSlot id="promo-img" kind="promo" label={t("promo.image")} hint={t("promo.imageHint")} image={v.promo.image} onChange={(image) => change((s) => ({ ...s, promo: { ...s.promo, image } }))} />
+          <ImageSlot id="promo-img-rtl" kind="promo" label={t("promo.imageRtl")} hint={t("promo.imageRtlHint")} image={v.promo.imageRtl} onChange={(imageRtl) => change((s) => ({ ...s, promo: { ...s.promo, imageRtl } }))} />
         </div>
         <p className="mt-5 text-sm font-semibold">{t("spotlights")}</p>
         <div className="mt-2 grid gap-3 md:grid-cols-2 xl:grid-cols-4">

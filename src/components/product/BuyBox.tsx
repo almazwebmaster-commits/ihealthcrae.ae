@@ -228,7 +228,7 @@ export function BuyBox({ product }: { product: Product }) {
             {!sub && (
               <button
                 type="button"
-                className={buttonClass("primary", "lg", "w-full")}
+                className={buttonClass("soft", "lg", "w-full")}
                 onClick={() => {
                   cart.add(key, qty);
                   router.push("/cart");

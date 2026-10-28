@@ -2,7 +2,7 @@
 
 /*
  * iHealthcare design tokens
- * Boxy system: sharp 2–4px corners, 1px hairline borders, dense grids.
+ * Fresh system: light chrome, soft 8–20px corners, pastel category tints.
  */
 @theme {
   /* Fonts (CSS vars are injected by next/font in the locale layout) */
@@ -10,45 +10,49 @@
     sans-serif;
   --font-arabic-first: var(--font-arabic), var(--font-inter), ui-sans-serif,
     system-ui, sans-serif;
+  /* Headings: Plus Jakarta Sans for Latin, Plex Arabic picks up Arabic glyphs */
+  --font-display: var(--font-jakarta), var(--font-arabic), var(--font-inter),
+    ui-sans-serif, system-ui, sans-serif;
 
-  /* Brand — Pharmacy Teal */
-  --color-brand-50: #e8f5f4;
-  --color-brand-100: #c9e8e5;
-  --color-brand-200: #96d2cc;
-  --color-brand-300: #5cb7af;
-  --color-brand-400: #2e9a92;
-  --color-brand-500: #0f857c;
-  --color-brand-600: #0b6e69;
-  --color-brand-700: #095a56;
-  --color-brand-800: #084745;
-  --color-brand-900: #063634;
-  --color-brand-950: #032321;
+  /* Brand — Fresh green-teal (600 = buttons/links, passes AA with white) */
+  --color-brand-50: #e9f7f3;
+  --color-brand-100: #cdefe6;
+  --color-brand-200: #9eddcc;
+  --color-brand-300: #6acdb6;
+  --color-brand-400: #33b89c;
+  --color-brand-500: #12a38b;
+  --color-brand-600: #07806e;
+  --color-brand-700: #0b6b5d;
+  --color-brand-800: #0b4d44;
+  --color-brand-900: #0b3b35;
+  --color-brand-950: #0b2e29;
 
-  /* Accent — Saffron Amber (deals, primary CTAs, the "i" dot) */
+  /* Accent — Saffron Amber, reserved for deals, badges and the "i" dot */
   --color-accent-50: #fff8e1;
-  --color-accent-100: #ffedb3;
+  --color-accent-100: #fff4cc;
   --color-accent-200: #ffe180;
   --color-accent-300: #ffd866;
   --color-accent-400: #ffc62e;
   --color-accent-500: #ffb400;
   --color-accent-600: #e09a00;
-  --color-accent-700: #b87a00;
+  --color-accent-700: #7a5600;
 
-  /* Ink — text & dark chrome */
-  --color-ink-950: #08111d;
-  --color-ink-900: #0e1b2c;
-  --color-ink-800: #1b2a3d;
-  --color-ink-700: #334155;
-  --color-ink-600: #475569;
-  --color-ink-500: #64748b;
-  --color-ink-400: #94a3b8;
-  --color-ink-300: #cbd5e1;
+  /* Ink — text */
+  --color-ink-950: #0b1620;
+  --color-ink-900: #13222e;
+  --color-ink-800: #1f3340;
+  --color-ink-700: #35474f;
+  --color-ink-600: #55656f;
+  --color-ink-500: #6b7b85;
+  --color-ink-400: #98a6ad;
+  --color-ink-300: #cdd5d9;
 
   /* Surfaces & lines */
-  --color-surface: #f2f4f5;
+  --color-surface: #f6f8f7;
   --color-surface-raised: #ffffff;
-  --color-line: #dde2e5;
-  --color-line-strong: #c5ccd1;
+  --color-surface-sunken: #f1f4f3;
+  --color-line: #e3e8e6;
+  --color-line-strong: #cdd5d2;
 
   /* Semantic */
   --color-sale: #d92d20;
@@ -58,20 +62,40 @@
   --color-info: #2e90fa;
   --color-info-50: #eff8ff;
 
-  /* Boxy radii — everything stays near-square */
-  --radius-xs: 1px;
-  --radius-sm: 2px;
-  --radius: 2px;
-  --radius-md: 3px;
-  --radius-lg: 4px;
-  --radius-xl: 4px;
-  --radius-2xl: 6px;
+  /* Category pastels (background) and their ink (icons/text, AA on the pastel) */
+  --color-pastel-mint: #e3f5ee;
+  --color-pastel-mint-ink: #0b6e5c;
+  --color-pastel-butter: #fff4cc;
+  --color-pastel-butter-ink: #7a5600;
+  --color-pastel-blush: #fde7ee;
+  --color-pastel-blush-ink: #b0275a;
+  --color-pastel-sky: #e3f1fc;
+  --color-pastel-sky-ink: #1f5f99;
+  --color-pastel-peach: #ffe9dc;
+  --color-pastel-peach-ink: #9a3e12;
+  --color-pastel-lavender: #ece8fb;
+  --color-pastel-lavender-ink: #5b3fc4;
+  --color-pastel-sage: #e6f4d9;
+  --color-pastel-sage-ink: #3f6b12;
+  --color-pastel-coral: #fee4e2;
+  --color-pastel-coral-ink: #b42318;
 
-  /* Elevation — flat, hairline-led */
-  --shadow-box: 0 1px 0 0 rgb(14 27 44 / 0.04);
-  --shadow-pop: 0 8px 24px -8px rgb(14 27 44 / 0.18);
+  /* Soft radii — inputs 8, images 12, cards 16, banners 20 */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 28px;
 
-  --container-site: 1440px;
+  /* Elevation — soft and low */
+  --shadow-box: 0 1px 2px 0 rgb(19 34 46 / 0.04);
+  --shadow-card: 0 1px 2px 0 rgb(19 34 46 / 0.04), 0 4px 16px -6px rgb(19 34 46 / 0.08);
+  --shadow-pop: 0 12px 32px -10px rgb(19 34 46 / 0.2);
+
+  --container-site: 1360px;
 
   /* Chart series (validated for colour-blind separation and contrast on white) */
   --color-chart-teal: #008f82;
@@ -101,13 +125,25 @@
     font-family: var(--font-arabic-first);
   }
 
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+  }
+
+  html[lang="ar"] h1,
+  html[lang="ar"] h2 {
+    font-family: var(--font-arabic-first);
+    letter-spacing: 0;
+  }
+
   ::selection {
-    background: var(--color-accent-300);
+    background: var(--color-brand-100);
     color: var(--color-ink-900);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-accent-500);
+    outline: 2px solid var(--color-brand-500);
     outline-offset: 2px;
   }
 }

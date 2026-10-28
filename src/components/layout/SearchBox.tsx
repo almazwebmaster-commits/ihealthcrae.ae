@@ -80,12 +80,12 @@ export function SearchBox({ categories, className }: { categories: SearchCategor
     >
       <div
         className={cn(
-          "group flex h-11 items-center rounded-sm text-white ring-1 ring-white/25 transition-colors",
-          "bg-white/10 hover:bg-white/15",
-          "focus-within:bg-white focus-within:text-ink-900 focus-within:ring-2 focus-within:ring-accent-500",
+          "group flex h-12 items-center rounded-full bg-surface-sunken text-ink-900 ring-[1.5px] ring-line transition-colors",
+          "hover:ring-line-strong",
+          "focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-500",
         )}
       >
-        <Search className="ms-3 size-5 shrink-0 opacity-70" aria-hidden />
+        <Search className="ms-4 size-5 shrink-0 text-ink-500" aria-hidden />
         <input
           type="search"
           name="q"
@@ -102,25 +102,25 @@ export function SearchBox({ categories, className }: { categories: SearchCategor
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
-          className="min-w-0 flex-1 bg-transparent px-3 text-sm placeholder:text-brand-100/80 focus:outline-none group-focus-within:placeholder:text-ink-400 [&::-webkit-search-cancel-button]:hidden"
+          className="min-w-0 flex-1 bg-transparent px-3 text-[15px] placeholder:text-ink-500 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
         />
         {q && (
           <button
             type="button"
             aria-label={t("clear")}
             onClick={() => setQ("")}
-            className="inline-flex size-8 items-center justify-center rounded-xs opacity-60 hover:opacity-100"
+            className="inline-flex size-8 items-center justify-center rounded-full text-ink-500 hover:bg-white hover:text-ink-900"
           >
             <X className="size-4" aria-hidden />
           </button>
         )}
-        <span aria-hidden className="mx-1 hidden h-6 w-px bg-current opacity-20 sm:block" />
+        <span aria-hidden className="mx-1 hidden h-6 w-px bg-line-strong sm:block" />
         <label className="relative hidden items-center sm:flex">
           <span className="sr-only">{t("inCategory")}</span>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="max-w-36 cursor-pointer appearance-none bg-transparent py-1 pe-6 ps-2 text-xs font-semibold focus:outline-none"
+            className="max-w-36 cursor-pointer appearance-none bg-transparent py-1 pe-6 ps-2 text-xs font-semibold text-ink-700 focus:outline-none"
           >
             <option value="" className="text-ink-900">{t("everywhere")}</option>
             {categories.map((c) => (
@@ -129,22 +129,21 @@ export function SearchBox({ categories, className }: { categories: SearchCategor
               </option>
             ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute end-1 size-3.5 opacity-70" aria-hidden />
+          <ChevronDown className="pointer-events-none absolute end-1 size-3.5 text-ink-500" aria-hidden />
         </label>
         <button
           type="submit"
-          className="m-1 inline-flex h-9 items-center gap-1.5 rounded-xs bg-accent-500 px-3 text-sm font-bold text-ink-900 hover:bg-accent-400"
+          className="m-1 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white transition-colors hover:bg-brand-700"
         >
-          <span className="hidden lg:inline">{t("submit")}</span>
-          <ArrowRight className="flip-rtl size-4" aria-hidden />
-          <span className="sr-only lg:hidden">{t("submit")}</span>
+          <Search className="size-5" strokeWidth={2.2} aria-hidden />
+          <span className="sr-only">{t("submit")}</span>
         </button>
       </div>
 
       {open && (
         <div
           id={panelId}
-          className="absolute inset-x-0 top-full z-50 mt-1.5 overflow-hidden rounded-sm border border-line bg-white text-ink-900 shadow-pop"
+          className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-line bg-white text-ink-900 shadow-pop"
         >
           {term.length < 2 ? (
             <div className="grid gap-4 p-4 sm:grid-cols-2">
@@ -159,7 +158,7 @@ export function SearchBox({ categories, className }: { categories: SearchCategor
                       key={word}
                       href={searchHref(word)}
                       onClick={() => setOpen(false)}
-                      className="rounded-sm border border-line bg-surface px-2.5 py-1 text-xs font-semibold text-ink-800 hover:border-brand-400 hover:bg-brand-50 hover:text-brand-800"
+                      className="rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink-800 hover:border-brand-400 hover:bg-brand-50 hover:text-brand-800"
                     >
                       {word}
                     </Link>
@@ -177,7 +176,7 @@ export function SearchBox({ categories, className }: { categories: SearchCategor
                           onClick={() => setOpen(false)}
                           className="flex items-center gap-2 rounded-sm p-1 text-xs font-medium hover:bg-surface"
                         >
-                          <span className={cn("inline-flex size-6 shrink-0 items-center justify-center rounded-xs", tintClasses(c.tint).bg, tintClasses(c.tint).fg)}>
+                          <span className={cn("inline-flex size-7 shrink-0 items-center justify-center rounded-full", tintClasses(c.tint).bg, tintClasses(c.tint).fg)}>
                             <CategoryIcon slug={c.slug} className="size-3.5" aria-hidden />
                           </span>
                           <span className="line-clamp-1">{c.name}</span>

@@ -41,20 +41,20 @@ export async function Footer() {
   ];
 
   return (
-    <footer className="mt-auto bg-ink-900 text-sm text-ink-300">
+    <footer className="mt-auto bg-brand-950 text-sm text-brand-100">
       {/* Newsletter strip */}
-      <div className="bg-brand-800">
+      <div className="bg-brand-900">
         <div className="container-site flex flex-col items-start gap-3 py-5 md:flex-row md:items-center md:justify-between">
           <p className="font-semibold text-white">{t("newsletter")}</p>
-          <form className="flex w-full max-w-md">
+          <form className="flex w-full max-w-md gap-2">
             <input
               type="email"
               required
               placeholder={t("emailPlaceholder")}
               aria-label={t("emailPlaceholder")}
-              className="h-10 min-w-0 flex-1 rounded-s-sm border border-e-0 border-brand-950 bg-white px-3 text-ink-900 placeholder:text-ink-400 focus:outline-none"
+              className="h-10 min-w-0 flex-1 rounded-full bg-white px-4 text-ink-900 placeholder:text-ink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
             />
-            <Button type="submit" variant="accent" className="rounded-s-none">
+            <Button type="submit" variant="accent">
               {t("subscribe")}
             </Button>
           </form>
@@ -64,8 +64,8 @@ export async function Footer() {
       <div className="container-site grid grid-cols-2 gap-8 py-10 md:grid-cols-3 lg:grid-cols-5">
         <div className="col-span-2 md:col-span-3 lg:col-span-2">
           <Logo tone="dark" />
-          <p className="mt-3 max-w-xs text-ink-400">{tBrand("tagline")}</p>
-          <p className="mt-4 inline-flex items-start gap-2 text-xs text-ink-400">
+          <p className="mt-3 max-w-xs text-brand-200">{tBrand("tagline")}</p>
+          <p className="mt-4 inline-flex items-start gap-2 text-xs text-brand-200">
             <ShieldCheck className="size-4 shrink-0 text-accent-500" aria-hidden />
             {t("genuine")}
           </p>
@@ -88,23 +88,23 @@ export async function Footer() {
         ))}
       </div>
 
-      <div className="border-t border-ink-800">
+      <div className="border-t border-white/10">
         <div className="container-site flex flex-col gap-4 py-5 md:flex-row md:items-center md:justify-between">
-          <p className="text-xs text-ink-400">
+          <p className="text-xs text-brand-200">
             {t("rights", { year: new Date().getFullYear() })}
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="me-1 text-xs text-ink-400">{t("payWith")}</span>
+            <span className="me-1 text-xs text-brand-200">{t("payWith")}</span>
             {payments.map((p) => (
               <span
                 key={p}
                 dir="ltr"
-                className="rounded-xs border border-ink-700 bg-ink-800 px-2 py-1 text-[11px] font-bold text-white"
+                className="rounded-md bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white"
               >
                 {p}
               </span>
             ))}
-            <span className="inline-flex items-center gap-1 rounded-xs border border-accent-600 bg-accent-500 px-2 py-1 text-[11px] font-bold text-ink-900">
+            <span className="inline-flex items-center gap-1 rounded-md bg-accent-500 px-2.5 py-1 text-[11px] font-bold text-ink-900">
               <Banknote className="size-3.5" aria-hidden />
               {t("cod")}
             </span>

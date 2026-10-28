@@ -33,14 +33,14 @@ export function MobileMenu({
         aria-label={menuLabel}
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="inline-flex size-10 items-center justify-center rounded-sm text-white hover:bg-white/10 lg:hidden"
+        className="-ms-2 inline-flex size-11 items-center justify-center rounded-lg text-ink-900 hover:bg-surface-sunken lg:hidden"
       >
         <Menu className="size-6" aria-hidden />
       </button>
 
       <div
         className={cn(
-          "fixed inset-0 z-50 bg-ink-950/60 transition-opacity lg:hidden",
+          "fixed inset-0 z-50 bg-ink-950/40 backdrop-blur-[2px] transition-opacity lg:hidden",
           open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
         onClick={() => setOpen(false)}
@@ -56,13 +56,13 @@ export function MobileMenu({
             : "invisible -translate-x-full rtl:translate-x-full",
         )}
       >
-        <div className="flex items-center justify-between bg-brand-900 px-4 py-3">
-          <Logo tone="dark" showTld={false} className="[&_svg]:size-7 [&>span:last-child]:text-xl" />
+        <div className="flex items-center justify-between border-b border-line bg-brand-50 px-4 py-3">
+          <Logo showTld={false} className="[&_svg]:size-7 [&>span:last-child]:text-xl" />
           <button
             type="button"
             aria-label={closeLabel}
             onClick={() => setOpen(false)}
-            className="inline-flex size-9 items-center justify-center rounded-sm text-white hover:bg-white/10"
+            className="inline-flex size-11 items-center justify-center rounded-lg text-ink-900 hover:bg-white"
           >
             <X className="size-5" aria-hidden />
           </button>

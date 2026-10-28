@@ -1149,7 +1149,11 @@
         "eyebrowAr": "Small heading (Arabic)",
         "titleEn": "Title (English)",
         "titleAr": "Title (Arabic)",
-        "category": "Category for '{pct}'"
+        "category": "Category for '{pct}'",
+        "image": "Background photo",
+        "imageHint": "Cropped to 1200 × 1200. Keep the lower part clear: the text sits there.",
+        "imageRtl": "Background photo (Arabic)",
+        "imageRtlHint": "Optional; falls back to the photo above."
       },
       "spotlights": "Spotlight products",
       "spotlight": "Spotlight {n}",
@@ -1334,5 +1338,9 @@
     "resume": "Resume",
     "cancel": "Cancel subscription",
     "confirmCancel": "Cancel this subscription? You won't receive further deliveries."
+  },
+  "TabBar": {
+    "home": "Home",
+    "account": "Account"
   }
 }

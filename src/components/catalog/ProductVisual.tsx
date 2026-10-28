@@ -30,7 +30,8 @@ export function ProductVisual({
         sizes={sizes}
         priority={priority}
         draggable={false}
-        className="object-contain"
+        // multiply lets white packshot backgrounds take on the tile colour
+        className="object-contain mix-blend-multiply"
       />
     </div>
   );

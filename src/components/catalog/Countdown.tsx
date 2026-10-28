@@ -31,7 +31,7 @@ export function Countdown({ label, until }: { label: string; until?: string }) {
         {parts.map((p, i) => (
           <span key={i} className="inline-flex items-center gap-0.5">
             {i > 0 && <span className="text-ink-400">:</span>}
-            <span className="rounded-xs bg-ink-900 px-1.5 py-0.5 text-white">{p}</span>
+            <span className="rounded-md bg-ink-900 px-2 py-1 text-white">{p}</span>
           </span>
         ))}
       </span>

@@ -2,7 +2,7 @@
 
 import { Check, ShoppingCart } from "lucide-react";
 import { useRef, useState } from "react";
-import { buttonClass, type ButtonSize } from "@/components/ui/Button";
+import { buttonClass, type ButtonSize, type ButtonVariant } from "@/components/ui/Button";
 import { cart } from "@/lib/cart-store";
 
 export function AddToCartButton({
@@ -14,6 +14,7 @@ export function AddToCartButton({
   label,
   addedLabel,
   size = "sm",
+  variant = "primary",
   className,
 }: {
   slug: string;
@@ -25,6 +26,7 @@ export function AddToCartButton({
   label: string;
   addedLabel: string;
   size?: ButtonSize;
+  variant?: ButtonVariant;
   className?: string;
 }) {
   const [added, setAdded] = useState(false);
@@ -40,7 +42,7 @@ export function AddToCartButton({
         clearTimeout(timer.current);
         timer.current = setTimeout(() => setAdded(false), 1600);
       }}
-      className={buttonClass(added ? "primary" : "accent", size, className)}
+      className={buttonClass(added ? "soft" : variant, size, className)}
       aria-live="polite"
     >
       {added ? <Check className="size-4" aria-hidden /> : <ShoppingCart className="size-4" aria-hidden />}

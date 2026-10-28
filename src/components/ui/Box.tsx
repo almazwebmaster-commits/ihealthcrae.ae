@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-/** The core boxy surface: white, hairline border, square corners. */
+/** The core surface: white card, soft corners, a barely-there border. */
 export function Box({
   className,
   ...props
@@ -8,7 +8,7 @@ export function Box({
   return (
     <div
       className={cn(
-        "rounded-sm border border-line bg-surface-raised shadow-box",
+        "rounded-xl border border-line/70 bg-surface-raised shadow-box",
         className,
       )}
       {...props}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
+import { IBM_Plex_Sans_Arabic, Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -9,6 +9,12 @@ import "../globals.css";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
 });
 
 const plexArabic = IBM_Plex_Sans_Arabic({
@@ -47,7 +53,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={getDirection(locale)}
-      className={`${inter.variable} ${plexArabic.variable} h-full antialiased`}
+      className={`${inter.variable} ${jakarta.variable} ${plexArabic.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         {/* Storefront chrome lives in (store)/layout.tsx; the admin portal has its own shell. */}

@@ -66,7 +66,7 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
   return (
     <Box className="p-5">
       <h2 className="mb-4 flex items-center gap-3 text-lg font-bold">
-        <span className="inline-flex size-7 items-center justify-center rounded-xs bg-brand-700 text-sm text-white">{n}</span>
+        <span className="inline-flex size-7 items-center justify-center rounded-full bg-brand-600 text-sm text-white">{n}</span>
         {title}
       </h2>
       {children}

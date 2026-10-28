@@ -12,6 +12,7 @@ import {
   Truck,
   Zap,
 } from "lucide-react";
+import Image from "next/image";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { CategoryIcon } from "@/components/catalog/CategoryIcon";
 import { Countdown } from "@/components/catalog/Countdown";
@@ -21,7 +22,6 @@ import { ProductRail } from "@/components/catalog/ProductRail";
 import { ProductVisual } from "@/components/catalog/ProductVisual";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { QuadBox } from "@/components/home/QuadBox";
-import { Box } from "@/components/ui/Box";
 import { buttonClass } from "@/components/ui/Button";
 import { Link } from "@/i18n/navigation";
 import type { Product } from "@/lib/catalog-types";
@@ -42,13 +42,13 @@ function SpotlightTile({ product, label, locale }: { product?: Product; label: s
   return (
     <Link
       href={`/p/${product.slug}`}
-      className="group flex h-full flex-col rounded-sm border border-line bg-white p-3 transition-shadow hover:shadow-pop"
+      className="group flex h-full flex-col rounded-2xl bg-white p-4 shadow-box transition-shadow hover:shadow-card"
     >
       <span className="text-[11px] font-bold uppercase tracking-wide text-ink-500">{label}</span>
       <ProductVisual
         product={product}
         sizes="(min-width: 1024px) 320px, 50vw"
-        className="my-2 rounded-sm transition-transform group-hover:scale-[1.02]"
+        className="my-3 rounded-xl bg-surface-sunken transition-transform group-hover:scale-[1.02]"
       />
       <span className="line-clamp-2 text-sm text-ink-900 group-hover:text-brand-700">{tr(product.name, locale)}</span>
       <Price price={product.price} was={product.was} size="sm" className="mt-1" />
@@ -95,10 +95,11 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   });
   const ar = loc === "ar";
   const withPct = (text: string, n: number) => text.replace("{pct}", String(n));
+  const promoImage = (ar && home.promo.imageRtl) || home.promo.image;
 
   const blocks: Record<HomeSectionKey, React.ReactNode> = {
     hero: (
-      <section className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:grid-rows-2">
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:grid-rows-2">
         <div className="min-w-0 lg:col-span-8 lg:row-span-2">
           <HeroCarousel
             slides={heroSlides.map((s, i) => ({
@@ -120,80 +121,80 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </div>
         <Link
           href="/new-arrivals"
-          className="group flex items-center gap-4 rounded-sm border border-accent-600 bg-accent-500 p-5 text-ink-900 lg:col-span-4"
+          className="group flex items-center gap-4 rounded-2xl bg-pastel-peach p-6 text-ink-900 lg:col-span-4"
         >
-          <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-sm bg-ink-900 text-accent-500">
+          <span className="inline-flex size-16 shrink-0 items-center justify-center rounded-full bg-white text-pastel-peach-ink">
             <PackageOpen className="size-7" aria-hidden />
           </span>
           <span>
-            <span className="block text-lg font-extrabold">{t("newTitle")}</span>
-            <span className="block text-sm">{t("newBody")}</span>
+            <span className="block font-display text-xl font-extrabold">{t("newTitle")}</span>
+            <span className="block text-sm text-ink-700">{t("newBody")}</span>
           </span>
-          <ArrowRight className="flip-rtl ms-auto size-5 shrink-0" aria-hidden />
+          <ArrowRight className="flip-rtl ms-auto size-5 shrink-0 text-pastel-peach-ink transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" aria-hidden />
         </Link>
         <Link
           href="/best-sellers"
-          className="group flex items-center gap-4 rounded-sm bg-ink-900 p-5 text-white lg:col-span-4"
+          className="group flex items-center gap-4 rounded-2xl bg-pastel-lavender p-6 text-ink-900 lg:col-span-4"
         >
-          <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-sm bg-brand-600">
+          <span className="inline-flex size-16 shrink-0 items-center justify-center rounded-full bg-white text-pastel-lavender-ink">
             <TrendingUp className="size-7" aria-hidden />
           </span>
           <span>
-            <span className="block text-lg font-extrabold">{t("bestTitle")}</span>
-            <span className="block text-sm text-ink-300">{t("bestBody")}</span>
+            <span className="block font-display text-xl font-extrabold">{t("bestTitle")}</span>
+            <span className="block text-sm text-ink-700">{t("bestBody")}</span>
           </span>
-          <ArrowRight className="flip-rtl ms-auto size-5 shrink-0" aria-hidden />
+          <ArrowRight className="flip-rtl ms-auto size-5 shrink-0 text-pastel-lavender-ink transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" aria-hidden />
         </Link>
       </section>
     ),
 
     categories: (
-      <nav aria-label={tNav("allCategories")} className="no-scrollbar grid grid-flow-col auto-cols-[6.5rem] gap-3 overflow-x-auto sm:auto-cols-fr">
+      <nav aria-label={tNav("allCategories")} className="no-scrollbar grid grid-flow-col auto-cols-[5.5rem] gap-3 overflow-x-auto sm:auto-cols-fr sm:gap-4">
         {categories.map((c) => {
           return (
-            <Link key={c.slug} href={`/c/${c.slug}`} className="group flex flex-col items-center gap-2 rounded-sm border border-line bg-white p-3 text-center hover:border-ink-400">
-              <span className={cn("inline-flex size-14 items-center justify-center rounded-sm transition-transform group-hover:scale-105", tintClasses(c.tint).bg, tintClasses(c.tint).fg)}>
-                <CategoryIcon slug={c.slug} className="size-7" aria-hidden />
+            <Link key={c.slug} href={`/c/${c.slug}`} className="group flex flex-col items-center gap-2.5 text-center">
+              <span className={cn("inline-flex aspect-square w-full max-w-32 items-center justify-center rounded-full transition-transform group-hover:scale-105", tintClasses(c.tint).bg, tintClasses(c.tint).fg)}>
+                <CategoryIcon slug={c.slug} className="size-[38%]" strokeWidth={1.6} aria-hidden />
               </span>
-              <span className="line-clamp-2 text-xs font-semibold leading-4 text-ink-800">{tr(c.name, loc)}</span>
+              <span className="line-clamp-2 text-xs font-semibold leading-4 text-ink-800 group-hover:text-brand-700 sm:text-sm sm:leading-5">{tr(c.name, loc)}</span>
             </Link>
           );
         })}
-        <Link href="/offers" className="group flex flex-col items-center gap-2 rounded-sm border border-accent-600 bg-accent-500 p-3 text-center">
-          <span className="inline-flex size-14 items-center justify-center rounded-sm bg-ink-900 text-accent-500 transition-transform group-hover:scale-105">
-            <Tag className="size-7" aria-hidden />
+        <Link href="/offers" className="group flex flex-col items-center gap-2.5 text-center">
+          <span className="inline-flex aspect-square w-full max-w-32 items-center justify-center rounded-full bg-pastel-coral text-pastel-coral-ink transition-transform group-hover:scale-105">
+            <Tag className="size-[38%]" strokeWidth={1.6} aria-hidden />
           </span>
-          <span className="text-xs font-bold leading-4 text-ink-900">{tNav("offers")}</span>
+          <span className="text-xs font-bold leading-4 text-pastel-coral-ink sm:text-sm sm:leading-5">{tNav("offers")}</span>
         </Link>
       </nav>
     ),
 
     savings: (
-      <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Link
           href="/subscribe-and-save"
-          className="group relative flex items-center gap-4 overflow-hidden rounded-sm border border-brand-200 bg-brand-50 p-5"
+          className="group relative flex items-center gap-5 overflow-hidden rounded-2xl bg-pastel-mint p-6 sm:px-8"
         >
-          <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-sm bg-brand-700 text-white">
+          <span className="inline-flex size-16 shrink-0 items-center justify-center rounded-2xl bg-brand-600 text-white">
             <Repeat className="size-7" aria-hidden />
           </span>
           <span className="min-w-0">
             <span className="block text-xs font-bold uppercase tracking-wider text-brand-700">{t("snsEyebrow")}</span>
-            <span className="block text-lg font-extrabold text-ink-900">{t("snsTitle")}</span>
+            <span className="block font-display text-xl font-extrabold text-ink-900">{t("snsTitle")}</span>
             <span className="block text-sm text-ink-700">{t("snsBody")}</span>
           </span>
           <ArrowRight className="flip-rtl ms-auto size-5 shrink-0 text-brand-700 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" aria-hidden />
         </Link>
         <Link
           href="/multi-buy"
-          className="group relative flex items-center gap-4 overflow-hidden rounded-sm border border-accent-300 bg-accent-50 p-5"
+          className="group relative flex items-center gap-5 overflow-hidden rounded-2xl bg-pastel-butter p-6 sm:px-8"
         >
-          <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-sm bg-accent-500 text-ink-900">
+          <span className="inline-flex size-16 shrink-0 items-center justify-center rounded-2xl bg-accent-500 text-ink-900">
             <Layers className="size-7" aria-hidden />
           </span>
           <span className="min-w-0">
             <span className="block text-xs font-bold uppercase tracking-wider text-accent-700">{t("multiEyebrow")}</span>
-            <span className="block text-lg font-extrabold text-ink-900">{t("multiTitle")}</span>
+            <span className="block font-display text-xl font-extrabold text-ink-900">{t("multiTitle")}</span>
             <span className="block text-sm text-ink-700">{t("multiBody")}</span>
           </span>
           <ArrowRight className="flip-rtl ms-auto size-5 shrink-0 text-accent-700 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" aria-hidden />
@@ -202,23 +203,28 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     ),
 
     mosaic1: (
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <QuadBox {...quad(home.quadRow1[0])} />
         <QuadBox {...quad(home.quadRow1[1])} />
-        <div className="flex flex-col justify-between gap-6 rounded-sm bg-brand-700 p-6 text-white">
+        <div className="flex flex-col justify-between gap-4 rounded-2xl bg-[#d4e8e0] p-6 text-ink-900">
           <div className="space-y-3">
-            <span className="inline-flex size-12 items-center justify-center rounded-sm bg-accent-500 text-ink-900">
-              <Banknote className="size-6" aria-hidden />
+            <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-brand-600 text-white">
+              <Banknote className="size-7" aria-hidden />
             </span>
-            <h2 className="text-2xl font-extrabold leading-tight">{t("codTitle")}</h2>
-            <p className="text-sm text-brand-100">{t("codBody")}</p>
+            <h2 className="text-2xl font-extrabold leading-tight text-brand-950">{t("codTitle")}</h2>
+            <p className="text-sm text-ink-700">{t("codBody")}</p>
           </div>
-          <div className="grid grid-cols-3 gap-2" aria-hidden>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <span key={i} className={cn("aspect-square rounded-xs", i === 1 ? "bg-accent-500" : "bg-white/10")} />
-            ))}
+          {/* Card colour matches the photo's backdrop; the radial mask fades its edges into the card */}
+          <div className="relative -mx-4 min-h-48 flex-1 max-xl:aspect-square" aria-hidden>
+            <Image
+              src="/images/home/cod.jpg"
+              alt=""
+              fill
+              sizes="(min-width: 1280px) 320px, (min-width: 640px) 45vw, 90vw"
+              className="object-cover [mask-image:radial-gradient(closest-side,#000_72%,transparent)]"
+            />
           </div>
-          <Link href="/offers" className={buttonClass("accent", "md", "self-start")}>
+          <Link href="/offers" className={buttonClass("primary", "md", "self-start")}>
             {t("startShopping")}
             <ArrowRight className="flip-rtl size-4" aria-hidden />
           </Link>
@@ -246,19 +252,33 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     ),
 
     bento: (
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2">
         <Link
           href={home.promo.href}
-          className="group relative flex min-h-64 flex-col justify-end overflow-hidden rounded-sm bg-rose-700 p-6 text-white sm:col-span-2 lg:row-span-2"
+          className={cn(
+            "group relative flex min-h-64 flex-col justify-end overflow-hidden rounded-2xl p-8 text-ink-900 sm:col-span-2 lg:row-span-2",
+            promoImage ? "bg-pastel-sky max-sm:aspect-square" : "bg-pastel-blush",
+          )}
         >
-          <div aria-hidden className="absolute -end-6 -top-6 grid grid-cols-4 gap-2 opacity-25">
-            {Array.from({ length: 16 }).map((_, i) => (
-              <span key={i} className={cn("size-14 rounded-xs", i === 5 ? "bg-accent-400" : "bg-white")} />
-            ))}
-          </div>
-          <span className="relative text-xs font-bold uppercase tracking-widest text-rose-100">{ar ? home.promo.eyebrowAr : home.promo.eyebrowEn}</span>
+          {/* Photos keep the product to the right, so crop from the left when the tile is taller than wide */}
+          {promoImage ? (
+            <Image
+              src={promoImage.src}
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 680px, (min-width: 640px) 100vw, 100vw"
+              className="object-cover object-right transition-transform duration-500 group-hover:scale-[1.02]"
+            />
+          ) : (
+            <div aria-hidden className="absolute -end-6 -top-6 grid grid-cols-4 gap-3">
+              {Array.from({ length: 16 }).map((_, i) => (
+                <span key={i} className={cn("size-14 rounded-2xl", i === 5 ? "bg-accent-400" : i % 3 ? "bg-white/60" : "bg-white")} />
+              ))}
+            </div>
+          )}
+          <span className={cn("relative text-xs font-bold uppercase tracking-widest", promoImage ? "text-brand-700" : "text-pastel-blush-ink")}>{ar ? home.promo.eyebrowAr : home.promo.eyebrowEn}</span>
           <h2 className="relative mt-2 max-w-sm text-3xl font-extrabold leading-tight">{withPct(ar ? home.promo.titleAr : home.promo.titleEn, promoPct)}</h2>
-          <span className={buttonClass("accent", "md", "relative mt-5 self-start")}>
+          <span className={buttonClass("primary", "lg", "relative mt-6 self-start")}>
             {t("shopAll")}
             <ArrowRight className="flip-rtl size-4" aria-hidden />
           </span>
@@ -278,26 +298,26 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     ),
 
     brands: (
-      <Box>
-        <h2 className="border-b border-line px-4 py-3 text-base font-bold sm:text-lg">{t("brandsTitle")}</h2>
-        <ul className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+      <section>
+        <h2 className="mb-4 text-xl font-extrabold sm:text-2xl">{t("brandsTitle")}</h2>
+        <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
           {brands.map((b) => (
-            <li key={b.slug} className="border-b border-e border-line">
+            <li key={b.slug}>
               <Link
                 href={`/search?brand=${b.slug}`}
                 dir="ltr"
-                className="flex h-20 items-center justify-center px-2 text-center text-sm font-extrabold uppercase tracking-tight text-ink-700 transition-colors hover:bg-surface hover:text-brand-700"
+                className="flex h-20 items-center justify-center rounded-xl bg-white px-2 text-center text-sm font-extrabold tracking-tight text-ink-700 shadow-box transition-[color,box-shadow] hover:text-brand-700 hover:shadow-card"
               >
                 {b.name}
               </Link>
             </li>
           ))}
         </ul>
-      </Box>
+      </section>
     ),
 
     mosaic2: (
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {home.quadRow2.map((slug, i) => (
           <QuadBox key={`${slug}-${i}`} {...quad(slug)} />
         ))}
@@ -321,12 +341,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           { icon: Lock, title: t("trust.secure"), body: t("trust.secureBody") },
           { icon: RotateCcw, title: t("trust.returns"), body: t("trust.returnsBody") },
         ].map(({ icon: Icon, title, body }, i) => (
-          <div key={title} className={cn("flex items-start gap-3 rounded-sm border border-line bg-white p-4", i === 4 && "col-span-2 lg:col-span-1")}>
-            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-sm bg-brand-50 text-brand-700">
+          <div key={title} className={cn("flex items-center gap-3 rounded-xl bg-white p-4 shadow-box", i === 4 && "col-span-2 lg:col-span-1")}>
+            <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
               <Icon className="size-5" aria-hidden />
             </span>
             <span>
-              <span className="block text-sm font-bold">{title}</span>
+              <span className="block text-sm font-semibold">{title}</span>
               <span className="block text-xs text-ink-600">{body}</span>
             </span>
           </div>
@@ -336,7 +356,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   };
 
   return (
-    <div className="container-site space-y-4 py-4">
+    <div className="container-site space-y-8 py-5 lg:space-y-12 lg:py-6">
       {home.sections
         .filter((sec) => sec.enabled && (sec.key !== "hero" || heroSlides.length))
         .map((sec) => (

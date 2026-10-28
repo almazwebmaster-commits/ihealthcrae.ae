@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Menu } from "lucide-react";
+import { ChevronDown, LayoutGrid } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { CategoryIcon } from "@/components/catalog/CategoryIcon";
 import { Link } from "@/i18n/navigation";
@@ -47,11 +47,11 @@ export function AllCategoriesMenu({
         aria-controls="all-categories"
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "inline-flex items-center gap-2 rounded-sm px-2 py-1.5 font-bold hover:bg-white/10",
-          open && "bg-white/10",
+          "inline-flex h-9 items-center gap-2 rounded-full bg-brand-600 px-4 font-semibold text-white transition-colors hover:bg-brand-700",
+          open && "bg-brand-700",
         )}
       >
-        <Menu className="size-4" aria-hidden />
+        <LayoutGrid className="size-4" aria-hidden />
         {label}
         <ChevronDown className={cn("size-3.5 transition-transform", open && "rotate-180")} aria-hidden />
       </button>
@@ -59,7 +59,7 @@ export function AllCategoriesMenu({
       {open && (
         <div
           id="all-categories"
-          className="absolute inset-x-0 top-full z-50 border-b border-line bg-white text-ink-900 shadow-pop"
+          className="absolute inset-x-0 top-full z-50 rounded-b-2xl border-b border-line bg-white text-ink-900 shadow-pop"
         >
           <div className="container-site grid grid-cols-4 gap-x-6 gap-y-6 py-6 xl:grid-cols-7">
             {categories.map((c) => {
@@ -70,12 +70,12 @@ export function AllCategoriesMenu({
                     onClick={() => setOpen(false)}
                     className="group mb-2 flex items-center gap-2"
                   >
-                    <span className={cn("inline-flex size-8 items-center justify-center rounded-sm", c.tint.bg, c.tint.fg)}>
+                    <span className={cn("inline-flex size-9 items-center justify-center rounded-full", c.tint.bg, c.tint.fg)}>
                       <CategoryIcon slug={c.slug} className="size-4" aria-hidden />
                     </span>
                     <span className="text-sm font-bold group-hover:text-brand-700">{c.name}</span>
                   </Link>
-                  <ul className="space-y-1.5 ps-10 text-sm">
+                  <ul className="space-y-1.5 ps-11 text-sm">
                     {c.children.map((s) => (
                       <li key={s.slug}>
                         <Link

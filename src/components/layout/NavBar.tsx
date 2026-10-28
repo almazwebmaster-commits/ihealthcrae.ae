@@ -20,11 +20,11 @@ export async function NavBar() {
   }));
 
   return (
-    <nav className="relative border-b border-brand-950 bg-brand-800 text-sm text-white">
-      <div className="container-site flex h-10 items-center gap-1">
+    <nav className="relative border-b border-line bg-white text-sm text-ink-800 shadow-box">
+      <div className="container-site flex h-12 items-center gap-1.5">
         <AllCategoriesMenu label={t("allCategories")} viewAllLabel={tc("viewAll")} categories={menu} />
 
-        <ul className="no-scrollbar flex flex-1 items-center gap-1 overflow-x-auto">
+        <ul className="no-scrollbar flex flex-1 items-center gap-0.5 overflow-x-auto">
           {[
             { href: "/subscribe-and-save", label: t("subscribe") },
             { href: "/multi-buy", label: t("multibuy") },
@@ -35,7 +35,7 @@ export async function NavBar() {
             <li key={item.href} className="shrink-0">
               <Link
                 href={item.href}
-                className="inline-block rounded-sm px-2 py-1.5 font-medium text-brand-50 hover:bg-white/10 hover:text-white"
+                className="inline-block rounded-full px-3 py-2 font-medium text-ink-700 transition-colors hover:bg-surface-sunken hover:text-ink-900"
               >
                 {item.label}
               </Link>
@@ -45,7 +45,7 @@ export async function NavBar() {
 
         <Link
           href="/offers"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-sm bg-accent-500 px-2.5 py-1 font-bold text-ink-900 hover:bg-accent-400"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-sale-50 px-3.5 py-2 font-bold text-pastel-coral-ink transition-colors hover:bg-pastel-coral"
         >
           <Tag className="size-3.5" aria-hidden />
           {t("offers")}

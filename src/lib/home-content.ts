@@ -9,7 +9,8 @@ export type HomeSectionKey = (typeof homeSectionKeys)[number];
 export const heroThemes = ["teal", "rose", "ink", "amber"] as const;
 
 /** Banner image sizes the homepage uses (pixels). */
-export const BANNER_SIZES = { desktop: { width: 1568, height: 672 }, mobile: { width: 1080, height: 1350 } } as const;
+export const BANNER_SIZES = { desktop: { width: 1568, height: 672 }, mobile: { width: 1080, height: 1350 }, promo: { width: 1200, height: 1200 } } as const;
+export type BannerKind = keyof typeof BANNER_SIZES;
 
 const image = z.object({ src: z.string().regex(/^\/(uploads|images)\//), width: z.number().int().positive(), height: z.number().int().positive() }).nullable();
 const text = (max: number) => z.string().trim().max(max);
@@ -47,6 +48,9 @@ export const HomeContentInput = z.object({
     href: link,
     /** Category whose best discount fills "{pct}" */
     category: z.string().max(80),
+    /** Square background photo; text sits on its lower part. Arabic falls back to `image`. */
+    image: image.default(null),
+    imageRtl: image.default(null),
   }),
 });
 
@@ -78,6 +82,8 @@ export function defaultHomeContent(): HomeContent {
       titleEn: "Up to {pct}% off the skincare edit", titleAr: "خصم يصل إلى {pct}% على تشكيلة العناية بالبشرة",
       href: "/c/beauty-skincare?sale=1",
       category: "beauty-skincare",
+      image: null,
+      imageRtl: null,
     },
   };
 }

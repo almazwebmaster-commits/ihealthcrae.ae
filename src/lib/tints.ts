@@ -1,12 +1,12 @@
 /** Category colour keys → Tailwind classes (kept literal so Tailwind can see them). */
 export const tints = {
-  brand: { bg: "bg-brand-50", fg: "text-brand-600", solid: "bg-brand-600" },
-  accent: { bg: "bg-accent-50", fg: "text-accent-700", solid: "bg-accent-500" },
-  rose: { bg: "bg-rose-50", fg: "text-rose-600", solid: "bg-rose-600" },
-  violet: { bg: "bg-violet-50", fg: "text-violet-600", solid: "bg-violet-600" },
-  sky: { bg: "bg-sky-50", fg: "text-sky-600", solid: "bg-sky-600" },
-  red: { bg: "bg-red-50", fg: "text-red-600", solid: "bg-red-600" },
-  emerald: { bg: "bg-emerald-50", fg: "text-emerald-600", solid: "bg-emerald-600" },
+  brand: { bg: "bg-pastel-mint", fg: "text-pastel-mint-ink", solid: "bg-brand-500" },
+  accent: { bg: "bg-pastel-butter", fg: "text-pastel-butter-ink", solid: "bg-accent-500" },
+  rose: { bg: "bg-pastel-blush", fg: "text-pastel-blush-ink", solid: "bg-rose-400" },
+  violet: { bg: "bg-pastel-lavender", fg: "text-pastel-lavender-ink", solid: "bg-violet-400" },
+  sky: { bg: "bg-pastel-sky", fg: "text-pastel-sky-ink", solid: "bg-sky-400" },
+  red: { bg: "bg-pastel-peach", fg: "text-pastel-peach-ink", solid: "bg-orange-400" },
+  emerald: { bg: "bg-pastel-sage", fg: "text-pastel-sage-ink", solid: "bg-lime-500" },
 } as const;
 
 export type TintKey = keyof typeof tints;

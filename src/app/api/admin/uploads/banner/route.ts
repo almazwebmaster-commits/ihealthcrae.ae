@@ -1,10 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { BANNER_SIZES } from "@/lib/home-content";
+import { BANNER_SIZES, type BannerKind } from "@/lib/home-content";
 import { audit } from "@/server/admin/audit";
 import { staffActor } from "@/server/admin/guard";
 import { ACCEPTED_TYPES, MAX_UPLOAD_BYTES, saveBannerImage } from "@/server/admin/uploads";
 
-/** Homepage banner upload (multipart "file"; ?kind=desktop|mobile picks the crop size). */
+/** Homepage banner upload (multipart "file"; ?kind=desktop|mobile|promo picks the crop size). */
 export async function POST(req: NextRequest) {
   let actor;
   try {
@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
-  const kind = req.nextUrl.searchParams.get("kind") === "mobile" ? "mobile" : "desktop";
+  const param = req.nextUrl.searchParams.get("kind");
+  const kind: BannerKind = param === "mobile" || param === "promo" ? param : "desktop";
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
   if (!(file instanceof File)) return NextResponse.json({ error: "no_file" }, { status: 400 });
