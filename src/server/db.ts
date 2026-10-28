@@ -10,16 +10,22 @@ const connectionString = process.env.DATABASE_URL!;
 const isLocalDev = /@(localhost|127\.0\.0\.1):/.test(connectionString);
 // Neon closes connections it considers idle (and all of them when the database scales to zero),
 // so recycle pooled connections regularly and keep the TCP link alive in between.
+// A new connection that can't be opened within 5s fails fast (and is retried) instead of
+// hanging ~20s on the OS connect timeout.
 const adapter = new PrismaPg(
   isLocalDev
     ? { connectionString, max: 4, idleTimeoutMillis: 1_000 }
-    : { connectionString, idleTimeoutMillis: 10_000, maxLifetimeSeconds: 60, keepAlive: true },
+    : { connectionString, idleTimeoutMillis: 10_000, maxLifetimeSeconds: 60, keepAlive: true, connectionTimeoutMillis: 5_000 },
 );
 
 /** Read-only operations are safe to repeat; writes never are (an order or payment could be recorded twice). */
 const READS = new Set(["findUnique", "findUniqueOrThrow", "findFirst", "findFirstOrThrow", "findMany", "count", "aggregate", "groupBy"]);
-/** "Server closed the connection" / "can't reach the server" — the pool hands out a fresh connection next time. */
-const DROPPED = new Set(["P1017", "P1001"]);
+/**
+ * "Server closed the connection" / "can't reach the server", plus raw network failures the
+ * pg adapter passes through with an empty message (opening a connection timed out or was reset).
+ * The pool hands out a fresh connection next time.
+ */
+const DROPPED = new Set(["P1017", "P1001", "ETIMEDOUT", "ECONNRESET", "ECONNREFUSED"]);
 
 function createClient() {
   return new PrismaClient({ adapter }).$extends({
