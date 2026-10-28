@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { BANNER_SIZES, type BannerKind } from "@/lib/home-content";
 import { audit } from "@/server/admin/audit";
 import { staffActor } from "@/server/admin/guard";
-import { ACCEPTED_TYPES, MAX_UPLOAD_BYTES, saveBannerImage } from "@/server/admin/uploads";
+import { ACCEPTED_TYPES, MAX_UPLOAD_BYTES, saveBannerImage, UploadStorageError } from "@/server/admin/uploads";
 
 /** Homepage banner upload (multipart "file"; ?kind=desktop|mobile|promo picks the crop size). */
 export async function POST(req: NextRequest) {
@@ -23,7 +23,8 @@ export async function POST(req: NextRequest) {
     const image = await saveBannerImage(Buffer.from(await file.arrayBuffer()), BANNER_SIZES[kind]);
     await audit(actor, "homepage.banner", "upload", image.src, `${kind} ${file.name}`);
     return NextResponse.json({ image });
-  } catch {
+  } catch (e) {
+    if (e instanceof UploadStorageError) return NextResponse.json({ error: "storage" }, { status: 503 });
     return NextResponse.json({ error: "unreadable" }, { status: 400 });
   }
 }

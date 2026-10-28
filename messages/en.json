@@ -575,7 +575,8 @@
         "uploadSize": "Each photo must be under 10 MB.",
         "uploadUnreadable": "This file couldn't be read as an image.",
         "tooLong": "Too long — please shorten it.",
-        "endBeforeStart": "Must be after the start."
+        "endBeforeStart": "Must be after the start.",
+        "uploadStorage": "Couldn't save the image: image storage isn't set up or didn't respond. Nothing was uploaded — try again, or check the Cloudinary settings."
       },
       "ai": {
         "title": "AI assistant",
@@ -1172,7 +1173,8 @@
         "noBanner": "Show at least one banner (or hide the Hero banners section).",
         "upload": "That image couldn't be uploaded.",
         "uploadType": "Only JPG, PNG, WebP or AVIF images.",
-        "uploadSize": "Images must be under 10 MB."
+        "uploadSize": "Images must be under 10 MB.",
+        "uploadStorage": "Couldn't save the image: image storage isn't set up or didn't respond. Nothing was uploaded — try again, or check the Cloudinary settings."
       }
     },
     "feed": {

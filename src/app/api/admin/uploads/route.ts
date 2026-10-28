@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { audit } from "@/server/admin/audit";
 import { staffActor } from "@/server/admin/guard";
-import { ACCEPTED_TYPES, MAX_UPLOAD_BYTES, saveProductPhoto } from "@/server/admin/uploads";
+import { ACCEPTED_TYPES, MAX_UPLOAD_BYTES, saveProductPhoto, UploadStorageError } from "@/server/admin/uploads";
 
 /** Staff-only product photo upload (multipart field "file", one or more). */
 export async function POST(req: NextRequest) {
@@ -29,8 +29,8 @@ export async function POST(req: NextRequest) {
     }
     try {
       images.push(await saveProductPhoto(Buffer.from(await file.arrayBuffer())));
-    } catch {
-      errors.push({ name: file.name, error: "unreadable" });
+    } catch (e) {
+      errors.push({ name: file.name, error: e instanceof UploadStorageError ? "storage" : "unreadable" });
     }
   }
   if (images.length) await audit(actor, "upload.create", "upload", images.map((i) => i.url).join(","), `${images.length} photo(s)`);

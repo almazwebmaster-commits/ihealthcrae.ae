@@ -65,7 +65,7 @@ function ImageSlot({ id, label, hint, image, kind, onChange }: { id: string; lab
     setBusy(false);
     if (!res?.ok) {
       const e = ((await res?.json().catch(() => null)) as { error?: string } | null)?.error;
-      return setError(t(e === "type" ? "errors.uploadType" : e === "size" ? "errors.uploadSize" : "errors.upload"));
+      return setError(t(e === "type" ? "errors.uploadType" : e === "size" ? "errors.uploadSize" : e === "storage" ? "errors.uploadStorage" : "errors.upload"));
     }
     onChange(((await res.json()) as { image: Img }).image);
   }

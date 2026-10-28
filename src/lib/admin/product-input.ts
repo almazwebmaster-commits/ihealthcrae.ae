@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { IMAGE_SRC } from "@/lib/image-src";
 import { fromUaeInput } from "@/lib/uae-time";
 
 export const productStatuses = ["DRAFT", "ACTIVE", "ARCHIVED"] as const;
@@ -48,7 +49,7 @@ export const ProductInput = z
       .array(z.object({ labelEn: z.string().trim().min(1).max(80), labelAr: z.string().trim().min(1).max(80), price: money }))
       .max(20),
     images: z
-      .array(z.object({ url: z.string().regex(/^\/(uploads|images)\//), width: z.number().int().positive(), height: z.number().int().positive() }))
+      .array(z.object({ url: z.string().regex(IMAGE_SRC), width: z.number().int().positive(), height: z.number().int().positive() }))
       .max(12),
   })
   .superRefine((v, ctx) => {

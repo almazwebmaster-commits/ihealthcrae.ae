@@ -109,7 +109,7 @@ export function ProductEditor({ initial, options }: { initial?: Initial; options
     setV((s) => ({ ...s, images: [...s.images, ...data.images].slice(0, 12) }));
     if (data.errors.length) {
       const e = data.errors[0].error;
-      setMessage({ tone: "error", text: t(e === "type" ? "errors.uploadType" : e === "size" ? "errors.uploadSize" : "errors.uploadUnreadable") });
+      setMessage({ tone: "error", text: t(e === "type" ? "errors.uploadType" : e === "size" ? "errors.uploadSize" : e === "storage" ? "errors.uploadStorage" : "errors.uploadUnreadable") });
     }
   }
 

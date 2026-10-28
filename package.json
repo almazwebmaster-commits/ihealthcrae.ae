@@ -17,7 +17,8 @@
     "postinstall": "prisma generate",
     "user:role": "tsx scripts/set-role.ts",
     "db:demo-orders": "tsx scripts/seed-demo-orders.ts",
-    "subscriptions:renew": "node scripts/renew-subscriptions.mjs"
+    "subscriptions:renew": "node scripts/renew-subscriptions.mjs",
+    "uploads:migrate": "tsx scripts/migrate-uploads-to-cloudinary.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",

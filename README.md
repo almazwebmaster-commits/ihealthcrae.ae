@@ -73,8 +73,10 @@ action and admin API checks the section on the server.
 - Every staff change is written to `AuditLog`.
 
 Demo orders for testing: `npm run db:demo-orders` (remove with `npm run db:demo-orders -- --clear`).
-Uploaded photos are stored in `public/uploads/` — move to object storage before serverless deployment
-(`src/server/admin/uploads.ts` is the only place to change).
+Uploaded photos (products and homepage banners) are stored on **Cloudinary** when `CLOUDINARY_URL` is set,
+which is required on Vercel. Without it, local development saves them to `public/uploads/`, and on Vercel the
+upload is refused with a clear message. To move earlier local uploads to Cloudinary and update the database:
+`npm run uploads:migrate` (dry run), then `npm run uploads:migrate -- --apply`.
 
 ## Checkout & payments (Phase 4)
 

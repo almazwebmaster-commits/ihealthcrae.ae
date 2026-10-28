@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { heroSlides } from "@/data/home";
+import { IMAGE_SRC } from "@/lib/image-src";
 import { slotImage } from "@/lib/images";
 
 /** Homepage blocks staff can reorder and switch on/off, in their default order. */
@@ -12,7 +13,7 @@ export const heroThemes = ["teal", "rose", "ink", "amber"] as const;
 export const BANNER_SIZES = { desktop: { width: 1568, height: 672 }, mobile: { width: 1080, height: 1350 }, promo: { width: 1200, height: 1200 } } as const;
 export type BannerKind = keyof typeof BANNER_SIZES;
 
-const image = z.object({ src: z.string().regex(/^\/(uploads|images)\//), width: z.number().int().positive(), height: z.number().int().positive() }).nullable();
+const image = z.object({ src: z.string().regex(IMAGE_SRC), width: z.number().int().positive(), height: z.number().int().positive() }).nullable();
 const text = (max: number) => z.string().trim().max(max);
 const link = z.string().trim().max(300).regex(/^\/[^\s]*$/, "link");
 
