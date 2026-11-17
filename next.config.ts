@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
       ? [{ protocol: "https", hostname: "res.cloudinary.com", pathname: `/${cloudinaryCloud}/**` }]
       : [],
   },
+  experimental: {
+    // Lets coding agents nudge us when a Next.js security release is available.
+    agentUpgrade: "security",
+  },
   turbopack: {
     rules: {
       "*.css": {
