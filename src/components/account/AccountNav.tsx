@@ -19,7 +19,7 @@ export function AccountNav({ labels, isStaff }: { labels: Record<string, string>
   const items = [...ITEMS, ...(isStaff ? [{ href: "/admin", icon: LayoutDashboard, key: "admin" } as const] : [])];
 
   return (
-    <nav aria-label={labels.title} className="rounded-sm border border-line bg-white">
+    <nav aria-label={labels.title} className="rounded-xl border border-line/70 bg-white shadow-box">
       <ul className="no-scrollbar flex overflow-x-auto lg:flex-col">
         {items.map(({ href, icon: Icon, key }) => {
           const active = href === "/account" ? pathname === href : pathname.startsWith(href);

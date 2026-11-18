@@ -10,6 +10,7 @@ import { WishlistButton } from "@/components/catalog/WishlistButton";
 import { BuyBox } from "@/components/product/BuyBox";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductVideos } from "@/components/product/ProductVideos";
+import { RecordView } from "@/components/home/RecentlyViewed";
 import { Badge } from "@/components/ui/Badge";
 import { Box, BoxHeader } from "@/components/ui/Box";
 import { Link } from "@/i18n/navigation";
@@ -82,8 +83,11 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/p/[sl
         ]}
       />
 
-      <div className="grid gap-4 lg:grid-cols-12">
-        <div className="lg:col-span-5">
+      {/* Phones: gallery → title → buy box → description, so price and Add to cart come before the long copy.
+          Desktop: gallery | title + description | sticky buy box. The 1fr second row soaks up the gallery's
+          extra height so the description sits right under the title. */}
+      <div className="grid gap-4 lg:grid-cols-12 lg:grid-rows-[auto_1fr]">
+        <div className="lg:col-span-5 lg:row-span-2">
           <ProductGallery product={product} viewLabel={t("image")} videoLabel={t("playVideo")} />
         </div>
 
@@ -111,7 +115,15 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/p/[sl
             {product.subscribe && <Badge tone="brand">{t("snsShort", { pct: product.subscribe })}</Badge>}
             {product.tiers && <Badge tone="accent">{t("buyMoreSaveMore")}</Badge>}
           </div>
-          <hr className="border-line" />
+        </div>
+
+        <div className="lg:col-span-3 lg:col-start-10 lg:row-span-2 lg:row-start-1">
+          <div className="lg:sticky lg:top-40">
+            <BuyBox product={product} />
+          </div>
+        </div>
+
+        <div className="space-y-4 self-start rounded-2xl bg-white p-4 shadow-box lg:col-span-4 lg:col-start-6 lg:row-start-2 lg:rounded-none lg:border-t lg:border-line lg:bg-transparent lg:px-0 lg:pb-0 lg:shadow-none">
           <p className="whitespace-pre-line text-sm leading-6 text-ink-800">{tr(product.desc, locale)}</p>
           <div>
             <h2 className="mb-2 text-sm font-bold">{t("highlights")}</h2>
@@ -125,13 +137,9 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/p/[sl
             </ul>
           </div>
         </div>
-
-        <div className="lg:col-span-3">
-          <div className="lg:sticky lg:top-40">
-            <BuyBox product={product} />
-          </div>
-        </div>
       </div>
+
+      <RecordView slug={product.slug} />
 
       {product.video && (
         <ProductVideos

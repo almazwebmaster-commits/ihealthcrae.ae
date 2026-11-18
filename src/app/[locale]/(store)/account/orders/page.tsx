@@ -41,7 +41,7 @@ export default async function OrdersPage({ params }: PageProps<"/[locale]/accoun
       <ul className="space-y-2">
         {orders.map((o) => (
           <li key={o.id}>
-            <Link href={`/account/orders/${o.number}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-sm border border-line bg-white p-4 hover:border-ink-400">
+            <Link href={`/account/orders/${o.number}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-line/70 bg-white p-4 shadow-box transition-shadow hover:shadow-card">
               <span className="font-bold" dir="ltr">{o.number}</span>
               <span className="text-sm text-ink-600">{t("orderPlaced", { date: dt.format(o.placedAt) })}</span>
               <span className="text-sm text-ink-600">{t("orderItems", { count: o._count.items })}</span>

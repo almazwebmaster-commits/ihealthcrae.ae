@@ -22,7 +22,7 @@ export function EmptyState({
       <h2 className="mt-4 text-lg font-bold">{title}</h2>
       <p className="mt-1 max-w-sm text-sm text-ink-600">{body}</p>
       {cta && (
-        <Link href={cta.href} className={buttonClass("accent", "md", "mt-5")}>
+        <Link href={cta.href} className={buttonClass("primary", "md", "mt-5")}>
           {cta.label}
         </Link>
       )}

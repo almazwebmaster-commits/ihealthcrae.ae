@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans_Arabic, Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -11,10 +12,13 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const jakarta = Plus_Jakarta_Sans({
+// Headings. Self-hosted (Open Font License, Latin variable font 600–800) because fetching it from
+// Google Fonts at build time broke the Turbopack build on some networks.
+const jakarta = localFont({
+  src: "../fonts/PlusJakartaSans-Latin-600-800.woff2",
   variable: "--font-jakarta",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: "600 800",
+  display: "swap",
 });
 
 const plexArabic = IBM_Plex_Sans_Arabic({

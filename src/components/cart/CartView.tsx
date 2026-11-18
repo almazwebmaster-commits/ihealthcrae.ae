@@ -35,11 +35,13 @@ export function CartView() {
 
   if (!lines.length) {
     return (
-      <Box className="flex flex-col items-center px-6 py-16 text-center">
-        <ShoppingCart className="size-14 text-ink-300" aria-hidden />
-        <h1 className="mt-4 text-xl font-bold">{t("emptyTitle")}</h1>
-        <p className="mt-1 text-sm text-ink-600">{t("emptyBody")}</p>
-        <Link href="/" className={buttonClass("accent", "lg", "mt-6")}>
+      <Box className="flex flex-col items-center px-6 py-12 text-center sm:py-14">
+        <span className="inline-flex size-20 items-center justify-center rounded-full bg-brand-50">
+          <ShoppingCart className="size-9 text-brand-600" strokeWidth={1.8} aria-hidden />
+        </span>
+        <h1 className="mt-5 text-xl font-extrabold text-ink-900 sm:text-2xl">{t("emptyTitle")}</h1>
+        <p className="mt-1.5 max-w-sm text-sm text-ink-600">{t("emptyBody")}</p>
+        <Link href="/" className={buttonClass("primary", "lg", "mt-6")}>
           {t("continue")}
         </Link>
       </Box>
@@ -164,8 +166,8 @@ export function CartView() {
           {remaining > 0 ? (
             <div className="space-y-1.5">
               <p className="text-xs font-semibold text-ink-800">{t("freeDeliveryRemaining", { amount: fmt(remaining) })}</p>
-              <div className="h-2 overflow-hidden rounded-xs bg-surface">
-                <div className="h-full bg-accent-500" style={{ width: `${(subtotal / FREE_DELIVERY_THRESHOLD) * 100}%` }} />
+              <div className="h-2 overflow-hidden rounded-full bg-surface-sunken">
+                <div className="h-full rounded-full bg-brand-500 transition-[width] duration-500" style={{ width: `${(subtotal / FREE_DELIVERY_THRESHOLD) * 100}%` }} />
               </div>
             </div>
           ) : (
@@ -186,7 +188,7 @@ export function CartView() {
               {t("subscriptionNote", { count: subscriptions })}
             </p>
           )}
-          <Link href="/checkout" className={buttonClass("accent", "lg", "w-full")}>
+          <Link href="/checkout" className={buttonClass("primary", "lg", "w-full")}>
             <Lock className="size-4" aria-hidden />
             {t("checkout")}
           </Link>

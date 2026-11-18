@@ -1,6 +1,6 @@
 import type { L } from "@/lib/i18n-utils";
 
-export type HeroTheme = "teal" | "rose" | "ink" | "amber";
+export type HeroTheme = "teal" | "rose" | "ink" | "amber" | "light";
 
 export type HeroSlide = {
   id: string;

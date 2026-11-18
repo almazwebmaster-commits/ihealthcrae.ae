@@ -16,10 +16,14 @@ export default async function HomepageEditorPage({ params }: PageProps<"/[locale
   setRequestLocale((await params).locale);
   const locale = await getLocale();
   const t = await getTranslations("AdminUI.homepage");
-  const [{ updatedAt, updatedBy, ...content }, cats, products] = await Promise.all([
+  const [{ updatedAt, updatedBy, ...content }, cats, coupons] = await Promise.all([
     getHomeContent(),
-    db.category.findMany({ where: { parentId: null }, orderBy: { position: "asc" }, select: { slug: true, nameEn: true, nameAr: true } }),
-    db.product.findMany({ where: { status: "ACTIVE" }, orderBy: { nameEn: "asc" }, select: { slug: true, nameEn: true, nameAr: true, category: { select: { slug: true } } } }),
+    db.category.findMany({
+      where: { parentId: null },
+      orderBy: { position: "asc" },
+      select: { slug: true, nameEn: true, nameAr: true, children: { orderBy: { position: "asc" }, select: { slug: true, nameEn: true, nameAr: true } } },
+    }),
+    db.coupon.findMany({ where: { active: true }, orderBy: { code: "asc" }, select: { code: true, descriptionEn: true } }),
   ]);
   const dt = new Intl.DateTimeFormat(locale === "ar" ? "ar-AE-u-nu-latn" : "en-AE", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Dubai" });
 
@@ -30,7 +34,7 @@ export default async function HomepageEditorPage({ params }: PageProps<"/[locale
         key={updatedAt?.toISOString() ?? "defaults"}
         initial={content}
         cats={cats}
-        products={products.map((p) => ({ slug: p.slug, nameEn: p.nameEn, nameAr: p.nameAr, category: p.category.slug }))}
+        coupons={coupons}
         savedInfo={updatedAt ? t("lastSaved", { date: dt.format(updatedAt), name: updatedBy ?? "" }) : null}
       />
     </div>

@@ -165,6 +165,61 @@
   }
 }
 
+/* Fades the trailing edge of a sideways-scrolling row so cut-off items read as "more this way"
+   instead of a clipped word. Follows reading direction. */
+@utility fade-end {
+  mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+  &:where([dir="rtl"] *) {
+    mask-image: linear-gradient(to left, #000 calc(100% - 2.5rem), transparent);
+  }
+}
+
+/* Hero banner washes behind the headline (desktop). They cover the text side only — left in
+   English, right in Arabic — and fade out before the photo's subject. */
+@utility hero-scrim-light {
+  background: linear-gradient(90deg, #f4f1ea 0%, rgb(244 241 234 / 0.92) 26%, rgb(244 241 234 / 0.55) 45%, rgb(244 241 234 / 0) 64%);
+  &:where([dir="rtl"] *) {
+    background: linear-gradient(270deg, #f4f1ea 0%, rgb(244 241 234 / 0.92) 26%, rgb(244 241 234 / 0.55) 45%, rgb(244 241 234 / 0) 64%);
+  }
+}
+
+@utility hero-scrim-dark {
+  background: linear-gradient(90deg, rgb(11 22 32 / 0.6) 0%, rgb(11 22 32 / 0.32) 38%, rgb(11 22 32 / 0) 62%);
+  &:where([dir="rtl"] *) {
+    background: linear-gradient(270deg, rgb(11 22 32 / 0.6) 0%, rgb(11 22 32 / 0.32) 38%, rgb(11 22 32 / 0) 62%);
+  }
+}
+
+/* Hero progress bar: fills while a slide is shown; its end advances the carousel */
+@keyframes hero-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Shimmering placeholder block for loading skeletons */
+@utility skeleton {
+  border-radius: var(--radius-lg);
+  background: linear-gradient(90deg, var(--color-surface-sunken) 25%, #e9eeec 50%, var(--color-surface-sunken) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
 @utility no-scrollbar {
   scrollbar-width: none;
   &::-webkit-scrollbar {

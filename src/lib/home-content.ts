@@ -5,10 +5,23 @@ import { IMAGE_SRC } from "@/lib/image-src";
 import { slotImage } from "@/lib/images";
 
 /** Homepage blocks staff can reorder and switch on/off, in their default order. */
-export const homeSectionKeys = ["hero", "categories", "savings", "mosaic1", "deals", "bento", "bestSellers", "videoAd", "brands", "mosaic2", "newArrivals", "trust"] as const;
+export const homeSectionKeys = [
+  "hero", "quickPicks", "healthNeeds", "trust", "offers", "featured1", "deals", "reminder", "bestSellers",
+  "categoryTabs", "featured2", "recentlyViewed", "newArrivals", "brands", "help", "bulkQuote",
+] as const;
 export type HomeSectionKey = (typeof homeSectionKeys)[number];
 
-export const heroThemes = ["teal", "rose", "ink", "amber"] as const;
+/**
+ * Bumped when the default homepage layout changes. Saved content from an older layout gets the
+ * new default section order; once staff save in the editor, their order is kept.
+ */
+export const HOME_LAYOUT_VERSION = 2;
+
+/** Icons available for "Shop by health need" tiles (mapped to lucide icons in the storefront). */
+export const healthNeedIcons = ["drop", "elderly", "baby", "firstAid", "heart", "hygiene", "pill", "thermometer", "leaf", "shield"] as const;
+export const collectionTints = ["brand", "accent", "rose", "violet", "sky", "red", "emerald"] as const;
+
+export const heroThemes = ["teal", "rose", "ink", "amber", "light"] as const;
 
 /** Banner image sizes the homepage uses (pixels). */
 export const BANNER_SIZES = { desktop: { width: 1568, height: 672 }, mobile: { width: 1080, height: 1350 }, promo: { width: 1200, height: 1200 } } as const;
@@ -48,7 +61,26 @@ const VideoAdInput = z.object({
   inListings: z.boolean().default(true),
 });
 
+const HealthNeedInput = z.object({
+  labelEn: text(40).min(1),
+  labelAr: text(40).min(1),
+  icon: z.enum(healthNeedIcons),
+  tint: z.enum(collectionTints),
+  /** Top-level or subcategory slug the tile links to (its product count is shown) */
+  category: z.string().min(1).max(80),
+});
+
+/** "Featured" product collection: a tinted band with a product rail from one category. */
+const CollectionInput = z.object({
+  badgeEn: text(24), badgeAr: text(24),
+  titleEn: text(80).min(1), titleAr: text(80).min(1),
+  subtitleEn: text(120), subtitleAr: text(120),
+  category: z.string().min(1).max(80),
+  tint: z.enum(collectionTints),
+});
+
 export const HomeContentInput = z.object({
+  layoutVersion: z.number().int().optional(),
   sections: z.array(z.object({ key: z.enum(homeSectionKeys), enabled: z.boolean() })).length(homeSectionKeys.length),
   heroSlides: z.array(HeroSlideInput).min(1).max(8),
   /** Category boxes: first mosaic row (3 boxes + cash-on-delivery promo) and second row (4 boxes) */
@@ -67,8 +99,16 @@ export const HomeContentInput = z.object({
     imageRtl: image.default(null),
     /** Silent looping clip played over the photo (Cloudinary video, from `start` to `end` seconds) */
     video: clip.nullable().default(null),
+    /** Product spotlight: when set, the tile shows this product's photo, price and the feature chips instead of the photo above */
+    productSlug: z.string().max(120).default(""),
+    featuresEn: z.array(text(30)).max(3).default([]),
+    featuresAr: z.array(text(30)).max(3).default([]),
   }),
   videoAd: VideoAdInput.default({ video: null, productSlug: "", headlineEn: "", headlineAr: "", inListings: true }),
+  healthNeeds: z.array(HealthNeedInput).max(9),
+  collections: z.array(CollectionInput).length(2),
+  /** Coupon codes shown under "Offers for you" (only active, valid ones appear) */
+  offerCodes: z.array(z.string().trim().max(40)).max(6),
 });
 
 export type HomeContent = z.infer<typeof HomeContentInput>;
@@ -102,8 +142,35 @@ export function defaultHomeContent(): HomeContent {
       image: null,
       imageRtl: null,
       video: null,
+      productSlug: "",
+      featuresEn: [],
+      featuresAr: [],
     },
     videoAd: { video: null, productSlug: "", headlineEn: "", headlineAr: "", inListings: true },
+    layoutVersion: HOME_LAYOUT_VERSION,
+    healthNeeds: [
+      { labelEn: "Diabetes care", labelAr: "رعاية السكري", icon: "drop", tint: "sky", category: "glucose" },
+      { labelEn: "Elderly care", labelAr: "رعاية كبار السن", icon: "elderly", tint: "emerald", category: "incontinence-care" },
+      { labelEn: "Baby & mum", labelAr: "الطفل والأم", icon: "baby", tint: "rose", category: "mother-baby" },
+      { labelEn: "First aid", labelAr: "الإسعافات الأولية", icon: "firstAid", tint: "accent", category: "first-aid" },
+      { labelEn: "Heart & BP", labelAr: "القلب والضغط", icon: "heart", tint: "red", category: "blood-pressure" },
+      { labelEn: "Hygiene", labelAr: "النظافة الشخصية", icon: "hygiene", tint: "violet", category: "personal-care" },
+    ],
+    collections: [
+      {
+        badgeEn: "Featured", badgeAr: "مميّز",
+        titleEn: "Diabetes Care Essentials", titleAr: "أساسيات رعاية السكري",
+        subtitleEn: "Glucose meters, CGM sensors & test strips", subtitleAr: "أجهزة قياس السكر وحساسات المراقبة المستمرة وشرائط الاختبار",
+        category: "glucose", tint: "sky",
+      },
+      {
+        badgeEn: "Featured", badgeAr: "مميّز",
+        titleEn: "First Aid & Wound Care", titleAr: "الإسعافات الأولية والعناية بالجروح",
+        subtitleEn: "Dressings, plasters & antiseptics for every home", subtitleAr: "ضمادات ولصقات ومطهرات لكل منزل",
+        category: "first-aid", tint: "accent",
+      },
+    ],
+    offerCodes: [],
   };
 }
 
@@ -122,7 +189,8 @@ export function normalizeHomeContent(raw: unknown): HomeContent {
   }
   // Sections: keep the saved order and switches; a block added in a later version goes after the
   // block that precedes it in the default order.
-  const saved = (Array.isArray(stored.sections) ? stored.sections : []).filter(
+  const sameLayout = stored.layoutVersion === HOME_LAYOUT_VERSION;
+  const saved = (sameLayout && Array.isArray(stored.sections) ? stored.sections : []).filter(
     (s): s is { key: HomeSectionKey; enabled: boolean } =>
       !!s && typeof s === "object" && (homeSectionKeys as readonly string[]).includes((s as { key?: string }).key ?? "") && typeof (s as { enabled?: unknown }).enabled === "boolean",
   );
@@ -132,5 +200,5 @@ export function normalizeHomeContent(raw: unknown): HomeContent {
     const after = i ? sections.findIndex((s) => s.key === homeSectionKeys[i - 1]) : -1;
     sections.splice(after + 1, 0, { key, enabled: true });
   });
-  return { ...v, sections };
+  return { ...v, layoutVersion: HOME_LAYOUT_VERSION, sections };
 }

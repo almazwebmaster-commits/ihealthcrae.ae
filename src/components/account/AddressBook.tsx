@@ -124,7 +124,7 @@ export function AddressBook({ addresses }: { addresses: AddressView[] }) {
       <Box className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
         <h1 className="text-xl font-extrabold">{t("addressesTitle")}</h1>
         {editing === null && (
-          <Button variant="accent" onClick={() => setEditing("new")}>
+          <Button variant="primary" onClick={() => setEditing("new")}>
             <Plus className="size-4" aria-hidden />
             {t("addAddress")}
           </Button>

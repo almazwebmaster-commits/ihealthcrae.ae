@@ -24,7 +24,7 @@ export async function NavBar() {
       <div className="container-site flex h-12 items-center gap-1.5">
         <AllCategoriesMenu label={t("allCategories")} viewAllLabel={tc("viewAll")} categories={menu} />
 
-        <ul className="no-scrollbar flex flex-1 items-center gap-0.5 overflow-x-auto">
+        <ul className="no-scrollbar fade-end flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto pe-6">
           {[
             { href: "/subscribe-and-save", label: t("subscribe") },
             { href: "/multi-buy", label: t("multibuy") },

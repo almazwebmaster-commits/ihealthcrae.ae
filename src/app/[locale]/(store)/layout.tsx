@@ -1,3 +1,4 @@
+import { WhatsAppFab } from "@/components/home/HelpBanners";
 import { CartSync } from "@/components/layout/CartSync";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
@@ -14,9 +15,10 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       <StickyHeader header={<Header />} bar={<NavBar />} />
       <main className="flex-1">{children}</main>
       <Footer />
-      {/* Keeps the end of the footer clear of the mobile tab bar */}
-      <div aria-hidden className="h-16 md:hidden" />
+      {/* Keeps the end of the footer clear of the floating mobile tab bar */}
+      <div aria-hidden className="h-24 md:hidden" />
       <MobileTabBar />
+      <WhatsAppFab />
       <CartSync />
     </>
   );

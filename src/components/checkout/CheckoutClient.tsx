@@ -104,7 +104,7 @@ function PayButton({ total, returnUrl, onError }: { total: string; returnUrl: st
     <div className="space-y-4">
       <PaymentElement options={{ layout: "tabs" }} />
       <Button
-        variant="accent"
+        variant="primary"
         size="lg"
         className="w-full"
         disabled={!stripe || !elements || busy}
@@ -188,7 +188,7 @@ export function CheckoutClient({
     return (
       <Box className="mx-auto max-w-lg px-6 py-14 text-center">
         <h1 className="text-xl font-bold">{t("emptyTitle")}</h1>
-        <Link href="/" className={buttonClass("accent", "md", "mt-5")}>{t("continueShopping")}</Link>
+        <Link href="/" className={buttonClass("primary", "md", "mt-5")}>{t("continueShopping")}</Link>
       </Box>
     );
   }
@@ -417,7 +417,7 @@ export function CheckoutClient({
             </dl>
           )}
           {!pending && (
-            <Button variant="accent" size="lg" className="mt-4 w-full" disabled={placing || !quote || quote.issues.length > 0 || (quote.hasSubscription && !user)} onClick={place}>
+            <Button variant="primary" size="lg" className="mt-4 w-full" disabled={placing || !quote || quote.issues.length > 0 || (quote.hasSubscription && !user)} onClick={place}>
               <Lock className="size-4" aria-hidden />
               {placing ? t("processing") : effectivePayment === "COD" ? t("placeOrder") : t("continueToPayment")}
             </Button>

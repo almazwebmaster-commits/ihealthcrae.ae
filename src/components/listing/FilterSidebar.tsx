@@ -186,7 +186,7 @@ export function FilterSidebar({
   return (
     <>
       {/* Mobile: collapsible */}
-      <details className="group rounded-sm border border-line bg-white lg:hidden">
+      <details className="group rounded-xl border border-line/70 bg-white shadow-box lg:hidden">
         <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-bold">
           <SlidersHorizontal className="size-4" aria-hidden />
           {t("filters")}
@@ -194,7 +194,7 @@ export function FilterSidebar({
         <div className="border-t border-line">{body}</div>
       </details>
       {/* Desktop: sidebar */}
-      <aside aria-label={t("filters")} className="hidden self-start rounded-sm border border-line bg-white lg:sticky lg:top-40 lg:block">
+      <aside aria-label={t("filters")} className="hidden self-start rounded-xl border border-line/70 bg-white shadow-box lg:sticky lg:top-40 lg:block">
         <h2 className="flex items-center gap-2 border-b border-line px-4 py-3 text-sm font-bold">
           <SlidersHorizontal className="size-4" aria-hidden />
           {t("filters")}

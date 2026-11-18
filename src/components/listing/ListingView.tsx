@@ -73,7 +73,7 @@ export async function ListingView({
     <div className="container-site space-y-4 py-4">
       <Breadcrumbs items={breadcrumbs} />
 
-      <div className="flex flex-wrap items-end justify-between gap-3 rounded-sm border border-line bg-white px-4 py-3">
+      <div className="flex flex-wrap items-end justify-between gap-3 rounded-xl border border-line/70 bg-white shadow-box px-4 py-3">
         <div>
           <h1 className="text-xl font-extrabold text-ink-900 sm:text-2xl">{title}</h1>
           <p className="mt-0.5 text-sm text-ink-600">
@@ -138,7 +138,7 @@ export async function ListingView({
               ))}
             </ul>
           ) : (
-            <div className="flex flex-col items-center rounded-sm border border-line bg-white px-6 py-16 text-center">
+            <div className="flex flex-col items-center rounded-xl border border-line/70 bg-white shadow-box px-6 py-16 text-center">
               <PackageSearch className="size-12 text-ink-300" aria-hidden />
               <h2 className="mt-3 text-lg font-bold">{t("emptyTitle")}</h2>
               <p className="mt-1 text-sm text-ink-600">{t("emptyBody")}</p>

@@ -273,12 +273,13 @@ export async function featuredBrands(limit: number) {
       .sort((a, b) => (b._sum.reviewCount ?? 0) - (a._sum.reviewCount ?? 0))
       .map((g) => g.brandId),
   );
-  const picked: number[] = [];
+  const picked: { id: number; category: number }[] = [];
   for (let rank = 0; picked.length < limit && ranked.some((r) => r.length > rank); rank++) {
-    for (const list of ranked) {
+    ranked.forEach((list, ci) => {
       const id = list[rank];
-      if (id && !picked.includes(id) && picked.length < limit) picked.push(id);
-    }
+      if (id && !picked.some((p) => p.id === id) && picked.length < limit) picked.push({ id, category: ci });
+    });
   }
-  return picked.map((id) => ({ slug: brandById.get(id)!.slug, name: brandById.get(id)!.name }));
+  // `category`: the category the brand was picked for, shown as a short description under its name.
+  return picked.map(({ id, category }) => ({ slug: brandById.get(id)!.slug, name: brandById.get(id)!.name, category: categories[category].name }));
 }

@@ -10,7 +10,8 @@
   "Common": {
     "viewAll": "View all",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "loading": "Loading…"
   },
   "TopBar": {
     "deliverTo": "Deliver to",
@@ -62,7 +63,7 @@
     "newBody": "The latest products from top brands.",
     "bestTitle": "Best sellers",
     "bestBody": "What everyone in the UAE is buying.",
-    "dealsTitle": "Deals of the day",
+    "dealsTitle": "Special offers",
     "endsIn": "Ends in",
     "shopAll": "Shop all",
     "codTitle": "Pay cash on delivery",
@@ -81,14 +82,82 @@
       "secure": "Secure payment",
       "secureBody": "Cards, Apple Pay & Google Pay",
       "returns": "Easy returns",
-      "returnsBody": "Within 14 days of delivery"
+      "returnsBody": "Within 14 days of delivery",
+      "label": "Why shop with us"
     },
     "snsEyebrow": "Subscribe & save",
     "snsTitle": "Never run out — save up to 15%",
     "snsBody": "Automatic deliveries every 2–8 weeks. Skip or cancel anytime.",
     "multiEyebrow": "Buy more, save more",
     "multiTitle": "Buy 2, save 5% · Buy 3+, save 10%",
-    "multiBody": "Stock up on everyday essentials across hundreds of products."
+    "multiBody": "Stock up on everyday essentials across hundreds of products.",
+    "shopNow": "Shop now",
+    "seeAll": "See all",
+    "viewAll": "View all",
+    "recentlyViewed": "Recently viewed",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening",
+      "sub": "What can we help you find today?"
+    },
+    "quickPicks": {
+      "title": "Quick picks",
+      "newBadge": "New",
+      "deals": {
+        "title": "Best deals",
+        "sub": "Shop & save"
+      },
+      "new": {
+        "title": "New arrivals",
+        "sub": "Just added"
+      },
+      "best": {
+        "title": "Best sellers",
+        "sub": "Customer favourites"
+      },
+      "bulk": {
+        "title": "Bulk savings",
+        "sub": "Buy more, save more"
+      }
+    },
+    "healthNeeds": {
+      "title": "Shop by health need",
+      "subtitle": "Find the right supplies faster",
+      "count": "{count, plural, =0 {Coming soon} one {# product} other {# products}}"
+    },
+    "offers": {
+      "title": "Offers for you",
+      "subtitle": "Enter the code at checkout",
+      "free": "Free",
+      "delivery": "Delivery",
+      "off": "Off",
+      "minSpend": "On orders over {amount}",
+      "copy": "Copy code",
+      "copied": "Copied",
+      "shop": "Shop"
+    },
+    "reminder": {
+      "title": "Never run out",
+      "body": "Subscribe & save on supplies you use regularly, delivered every 2–8 weeks."
+    },
+    "categoryTabs": {
+      "title": "Shop by category",
+      "subtitle": "Specially curated for your needs",
+      "forYou": "For you"
+    },
+    "help": {
+      "title": "Not sure what to choose?",
+      "body": "Chat with our team on WhatsApp",
+      "message": "Hi iHealthcare, I need help choosing a product."
+    },
+    "bulk": {
+      "title": "Buying for a clinic, pharmacy or care home?",
+      "body": "Get bulk pricing and help sourcing the medical supplies you need.",
+      "cta": "Request a quote",
+      "message": "Hi iHealthcare, I'd like a bulk quote for my clinic / pharmacy / care home."
+    },
+    "whatsapp": "Chat with us on WhatsApp"
   },
   "Product": {
     "bestseller": "Best seller",
@@ -156,7 +225,20 @@
     "flashEndsIn": "Ends in",
     "video": "Video",
     "playVideo": "Play video",
-    "videosTitle": "Product videos"
+    "videosTitle": "Product videos",
+    "add": "Add",
+    "addShort": "Add",
+    "optionsShort": "Options",
+    "chooseOptions": "Choose options",
+    "inCart": "{count} in cart",
+    "removeFromCart": "Remove from cart",
+    "decrease": "Decrease quantity",
+    "increase": "Increase quantity",
+    "from": "From",
+    "optionsAvailable": "{count, plural, one {# option} other {# options}} available",
+    "pctOff": "{pct}% off",
+    "youSave": "You save {amount}",
+    "moreFrom": "More from {brand}"
   },
   "Listing": {
     "home": "Home",
@@ -606,9 +688,10 @@
         "missing": "Missing or conflicting details:",
         "errors": {
           "notConfigured": "AI suggestions aren't set up yet — add GEMINI_API_KEY (free at aistudio.google.com) to the server settings.",
+          "badKey": "The AI key was rejected by Google. Create a new key at aistudio.google.com/apikey and update GEMINI_API_KEY in the server settings.",
           "invalid": "Some product details couldn't be read. Please check the form and try again.",
           "refused": "The AI couldn't write copy for this product. Please write it manually.",
-          "busy": "The AI service is busy. Please try again in a minute.",
+          "busy": "Google’s free AI service is overloaded right now, so none of its models answered. Please try again in a few minutes.",
           "failed": "Couldn't get suggestions. Please try again.",
           "createCategory": "Couldn't create the category. Please try again.",
           "needName": "Enter a product name first."
@@ -1075,8 +1158,8 @@
           "hint": "3 category boxes and the cash-on-delivery promo"
         },
         "deals": {
-          "name": "Deals of the day",
-          "hint": "Products on sale, with a countdown"
+          "name": "Special offers",
+          "hint": "Products on sale"
         },
         "bento": {
           "name": "Promo tile & spotlights",
@@ -1087,8 +1170,8 @@
           "hint": "Products labelled Best seller"
         },
         "brands": {
-          "name": "Brands",
-          "hint": "Brand wall"
+          "name": "Shop by brand",
+          "hint": "Brand chips"
         },
         "mosaic2": {
           "name": "Category boxes — row 2",
@@ -1100,11 +1183,51 @@
         },
         "trust": {
           "name": "Trust strip",
-          "hint": "Genuine, fast delivery, COD, secure, returns"
+          "hint": "Genuine, fast delivery, COD, returns, secure payment"
         },
         "videoAd": {
           "name": "Sponsored video",
           "hint": "Brand video ad beside its product (set it up below)"
+        },
+        "quickPicks": {
+          "name": "Quick picks",
+          "hint": "Best deals, New arrivals, Best sellers and Bulk savings cards"
+        },
+        "healthNeeds": {
+          "name": "Shop by health need",
+          "hint": "Tiles linking to categories (edit below)"
+        },
+        "offers": {
+          "name": "Offers for you",
+          "hint": "Coupon tickets you pick below"
+        },
+        "featured1": {
+          "name": "Featured collection 1",
+          "hint": "Tinted band with products from one category"
+        },
+        "reminder": {
+          "name": "Never run out",
+          "hint": "Banner pointing to Subscribe & save"
+        },
+        "categoryTabs": {
+          "name": "Shop by category",
+          "hint": "Category tabs with products"
+        },
+        "featured2": {
+          "name": "Featured collection 2",
+          "hint": "Second tinted product band"
+        },
+        "recentlyViewed": {
+          "name": "Recently viewed",
+          "hint": "Each shopper's own recently opened products"
+        },
+        "help": {
+          "name": "WhatsApp help",
+          "hint": "Shown once NEXT_PUBLIC_WHATSAPP_NUMBER is set"
+        },
+        "bulkQuote": {
+          "name": "Bulk quote banner",
+          "hint": "For clinics and care homes; opens WhatsApp"
         }
       },
       "shown": "Shown",
@@ -1139,7 +1262,8 @@
         "teal": "Teal",
         "rose": "Rose",
         "ink": "Navy",
-        "amber": "Amber"
+        "amber": "Amber",
+        "light": "Light (for bright photos)"
       },
       "upload": "Upload",
       "replace": "Replace",
@@ -1163,7 +1287,12 @@
         "imageHint": "Cropped to 1200 × 1200. Keep the lower part clear: the text sits there.",
         "imageRtl": "Background photo (Arabic)",
         "imageRtlHint": "Optional; falls back to the photo above.",
-        "video": "Video"
+        "video": "Video",
+        "product": "Featured product (optional)",
+        "productHint": "Shows the product's own photo, price and the features below instead of the background photo.",
+        "featuresEn": "Features (English), up to 3",
+        "featuresAr": "Features (Arabic), up to 3",
+        "featurePlaceholder": "Feature {n}"
       },
       "spotlights": "Spotlight products",
       "spotlight": "Spotlight {n}",
@@ -1195,6 +1324,57 @@
         "inListingsHint": "Appears on the first results page when the results include this product's category or brand.",
         "videoHint": "The clip loops between the start and end times below. 15–30 seconds works best.",
         "needsVideo": "Add a video and pick a product to show the ad."
+      },
+      "needs": {
+        "title": "Shop by health need",
+        "hint": "Up to 9 tiles. Each links to a category and shows its product count.",
+        "labelEn": "Label (English)",
+        "labelAr": "Label (Arabic)",
+        "icon": "Icon",
+        "tint": "Colour",
+        "category": "Category",
+        "add": "Add tile",
+        "remove": "Remove tile"
+      },
+      "collections": {
+        "title": "Featured collections",
+        "hint": "Two tinted product bands. Each shows products from one category.",
+        "n": "Collection {n}",
+        "badgeEn": "Badge (English)",
+        "badgeAr": "Badge (Arabic)",
+        "titleEn": "Title (English)",
+        "titleAr": "Title (Arabic)",
+        "subtitleEn": "Subtitle (English)",
+        "subtitleAr": "Subtitle (Arabic)",
+        "category": "Category",
+        "tint": "Colour"
+      },
+      "offerCodes": {
+        "title": "Offers for you",
+        "hint": "Pick up to 6 coupons to show. Only active coupons within their dates appear on the homepage.",
+        "none": "No active coupons yet. Create them in Promotions.",
+        "pick": "Show this coupon"
+      },
+      "icons": {
+        "drop": "Drop (diabetes)",
+        "elderly": "Mobility (elderly)",
+        "baby": "Baby",
+        "firstAid": "First-aid kit",
+        "heart": "Heart",
+        "hygiene": "Sparkle (hygiene)",
+        "pill": "Pill",
+        "thermometer": "Thermometer",
+        "leaf": "Leaf",
+        "shield": "Shield"
+      },
+      "tints": {
+        "brand": "Green",
+        "accent": "Peach",
+        "rose": "Pink",
+        "violet": "Lavender",
+        "sky": "Blue",
+        "red": "Coral",
+        "emerald": "Sage"
       }
     },
     "feed": {
@@ -1381,7 +1561,9 @@
   },
   "TabBar": {
     "home": "Home",
-    "account": "Account"
+    "account": "Account",
+    "deals": "Deals",
+    "categories": "Categories"
   },
   "Ads": {
     "sponsored": "Sponsored",
@@ -1390,5 +1572,17 @@
     "soundOn": "Turn sound on",
     "soundOff": "Turn sound off",
     "play": "Play video"
+  },
+  "Categories": {
+    "title": "All categories",
+    "subtitle": "Browse everything we stock",
+    "viewAll": "View all",
+    "count": "{count, plural, =0 {Coming soon} one {# product} other {# products}}"
+  },
+  "ErrorPage": {
+    "title": "Something went wrong",
+    "body": "We couldn’t load this page. It’s usually temporary — please try again.",
+    "retry": "Try again",
+    "home": "Back to home"
   }
 }

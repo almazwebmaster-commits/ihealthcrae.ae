@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { resetHomeAction, saveHomeAction } from "@/app/[locale]/admin/homepage/actions";
-import { VideoField } from "@/components/admin/VideoField";
+import { CollectionsEditor, HealthNeedsEditor, OfferCodesEditor, type EditorCat, type EditorCoupon } from "@/components/admin/HomeCollectionsEditors";
 import { FormMessage } from "@/components/auth/AuthCard";
 import { Badge } from "@/components/ui/Badge";
 import { Box } from "@/components/ui/Box";
@@ -17,11 +17,10 @@ import { tr } from "@/lib/i18n-utils";
 import { cn } from "@/lib/utils";
 
 type Cat = { slug: string; nameEn: string; nameAr: string };
-type Prod = { slug: string; nameEn: string; nameAr: string; category: string };
 type Img = HeroSlideContent["desktop"];
 
 const select = "h-10 w-full rounded-sm border border-line-strong bg-white px-3 text-sm focus:border-brand-500 focus:outline-none";
-const swatch: Record<(typeof heroThemes)[number], string> = { teal: "bg-brand-700", rose: "bg-rose-700", ink: "bg-ink-900", amber: "bg-accent-500" };
+const swatch: Record<(typeof heroThemes)[number], string> = { teal: "bg-brand-700", rose: "bg-rose-700", ink: "bg-ink-900", amber: "bg-accent-500", light: "bg-[#f4f1ea] ring-1 ring-inset ring-line-strong" };
 
 function move<T>(list: T[], i: number, dir: -1 | 1) {
   const j = i + dir;
@@ -171,10 +170,8 @@ function BannerCard({ slide, i, n, cats, update, remove, onMove }: {
   );
 }
 
-export function HomeEditor({ initial, cats, products, savedInfo }: { initial: HomeContent; cats: Cat[]; products: Prod[]; savedInfo: string | null }) {
+export function HomeEditor({ initial, cats, coupons, savedInfo }: { initial: HomeContent; cats: EditorCat[]; coupons: EditorCoupon[]; savedInfo: string | null }) {
   const t = useTranslations("AdminUI.homepage");
-  const tv = useTranslations("AdminUI.video");
-  const locale = useLocale();
   const router = useRouter();
   const [v, setV] = useState<HomeContent>(initial);
   const [dirty, setDirty] = useState(false);
@@ -184,15 +181,6 @@ export function HomeEditor({ initial, cats, products, savedInfo }: { initial: Ho
     setV(fn);
     setDirty(true);
   };
-  const name = (c: { nameEn: string; nameAr: string }) => tr({ en: c.nameEn, ar: c.nameAr }, locale);
-  const catSelect = (value: string, onChange: (v: string) => void, id: string, label: string) => (
-    <div>
-      <Label htmlFor={id}>{label}</Label>
-      <select id={id} className={select} value={value} onChange={(e) => onChange(e.target.value)}>
-        {cats.map((c) => <option key={c.slug} value={c.slug}>{name(c)}</option>)}
-      </select>
-    </div>
-  );
 
   function save() {
     setMessage(undefined);
@@ -268,148 +256,9 @@ export function HomeEditor({ initial, cats, products, savedInfo }: { initial: Ho
         )}
       </Box>
 
-      {/* Category boxes */}
-      <Box className="p-5">
-        <h2 className="text-base font-bold">{t("boxes")}</h2>
-        <p className="mt-0.5 text-xs text-ink-500">{t("boxesHint")}</p>
-        <p className="mt-4 text-sm font-semibold">{t("row1")}</p>
-        <div className="mt-2 grid gap-3 md:grid-cols-3">
-          {v.quadRow1.map((slug, i) => <div key={i}>{catSelect(slug, (val) => change((s) => ({ ...s, quadRow1: s.quadRow1.map((x, j) => (j === i ? val : x)) })), `q1-${i}`, t("box", { n: i + 1 }))}</div>)}
-        </div>
-        <p className="mt-4 text-sm font-semibold">{t("row2")}</p>
-        <div className="mt-2 grid gap-3 md:grid-cols-4">
-          {v.quadRow2.map((slug, i) => <div key={i}>{catSelect(slug, (val) => change((s) => ({ ...s, quadRow2: s.quadRow2.map((x, j) => (j === i ? val : x)) })), `q2-${i}`, t("box", { n: i + 1 }))}</div>)}
-        </div>
-      </Box>
-
-      {/* Promo tile + spotlights */}
-      <Box className="p-5">
-        <h2 className="text-base font-bold">{t("bento")}</h2>
-        <p className="mt-0.5 text-xs text-ink-500">{t("bentoHint")}</p>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {(["eyebrowEn", "eyebrowAr", "titleEn", "titleAr"] as const).map((k) => (
-            <div key={k}>
-              <Label htmlFor={`promo-${k}`}>{t(`promo.${k}`)}</Label>
-              <Input id={`promo-${k}`} dir={k.endsWith("Ar") ? "rtl" : "ltr"} maxLength={k.startsWith("title") ? 120 : 60} value={v.promo[k]} onChange={(e) => change((s) => ({ ...s, promo: { ...s.promo, [k]: e.target.value } }))} />
-            </div>
-          ))}
-          <div>
-            <Label htmlFor="promo-href">{t("banner.link")}</Label>
-            <Input id="promo-href" dir="ltr" list="home-links" value={v.promo.href} onChange={(e) => change((s) => ({ ...s, promo: { ...s.promo, href: e.target.value.trim() } }))} />
-          </div>
-          {catSelect(v.promo.category, (val) => change((s) => ({ ...s, promo: { ...s.promo, category: val } })), "promo-category", t("promo.category"))}
-          <ImageSlot id="promo-img" kind="promo" label={t("promo.image")} hint={t("promo.imageHint")} image={v.promo.image} onChange={(image) => change((s) => ({ ...s, promo: { ...s.promo, image } }))} />
-          <ImageSlot id="promo-img-rtl" kind="promo" label={t("promo.imageRtl")} hint={t("promo.imageRtlHint")} image={v.promo.imageRtl} onChange={(imageRtl) => change((s) => ({ ...s, promo: { ...s.promo, imageRtl } }))} />
-          <div className="md:col-span-2">
-            <p className="mb-1 text-sm font-semibold">{t("promo.video")}</p>
-            <VideoField
-              area="homepage"
-              value={v.promo.video?.src ?? null}
-              hint={tv("promoHint")}
-              onChange={(src) => change((s) => ({ ...s, promo: { ...s.promo, video: src ? { src, start: s.promo.video?.start ?? 0, end: s.promo.video?.end ?? 20 } : null } }))}
-            />
-            {v.promo.video && (
-              <div className="mt-3 flex flex-wrap items-end gap-3">
-                {(["start", "end"] as const).map((k) => (
-                  <div key={k} className="w-40">
-                    <Label htmlFor={`promo-video-${k}`}>{tv(k === "start" ? "loopStart" : "loopEnd")}</Label>
-                    <Input
-                      id={`promo-video-${k}`}
-                      type="number"
-                      min={0}
-                      max={3600}
-                      inputMode="numeric"
-                      value={v.promo.video?.[k] ?? 0}
-                      onChange={(e) => {
-                        const n = Math.max(0, Math.min(3600, Math.round(Number(e.target.value) || 0)));
-                        change((s) => ({ ...s, promo: { ...s.promo, video: s.promo.video && { ...s.promo.video, [k]: n } } }));
-                      }}
-                    />
-                  </div>
-                ))}
-                <p className="pb-2 text-xs text-ink-500">{tv("loopHint")}</p>
-              </div>
-            )}
-          </div>
-        </div>
-        <p className="mt-5 text-sm font-semibold">{t("spotlights")}</p>
-        <div className="mt-2 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {v.spotlights.map((slug, i) => (
-            <div key={i}>
-              <Label htmlFor={`spot-${i}`}>{t("spotlight", { n: i + 1 })}</Label>
-              <select id={`spot-${i}`} className={select} value={slug} onChange={(e) => change((s) => ({ ...s, spotlights: s.spotlights.map((x, j) => (j === i ? e.target.value : x)) }))}>
-                {!products.some((p) => p.slug === slug) && <option value={slug}>{slug ? t("unavailable", { slug }) : t("none")}</option>}
-                {cats.map((c) => (
-                  <optgroup key={c.slug} label={name(c)}>
-                    {products.filter((p) => p.category === c.slug).map((p) => <option key={p.slug} value={p.slug}>{name(p)}</option>)}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
-          ))}
-        </div>
-      </Box>
-
-      {/* Sponsored video ad */}
-      <Box className="p-5">
-        <h2 className="text-base font-bold">{t("videoAd.title")}</h2>
-        <p className="mt-0.5 text-xs text-ink-500">{t("videoAd.hint")}</p>
-        <div className="mt-4 space-y-4">
-          <VideoField
-            area="homepage"
-            value={v.videoAd.video?.src ?? null}
-            hint={t("videoAd.videoHint")}
-            onChange={(src) => change((s) => ({ ...s, videoAd: { ...s.videoAd, video: src ? { src, start: s.videoAd.video?.start ?? 0, end: s.videoAd.video?.end ?? 20 } : null } }))}
-          />
-          {v.videoAd.video && (
-            <div className="flex flex-wrap gap-3">
-              {(["start", "end"] as const).map((k) => (
-                <div key={k} className="w-40">
-                  <Label htmlFor={`ad-video-${k}`}>{tv(k === "start" ? "loopStart" : "loopEnd")}</Label>
-                  <Input
-                    id={`ad-video-${k}`}
-                    type="number"
-                    min={0}
-                    max={3600}
-                    inputMode="numeric"
-                    value={v.videoAd.video?.[k] ?? 0}
-                    onChange={(e) => {
-                      const n = Math.max(0, Math.min(3600, Math.round(Number(e.target.value) || 0)));
-                      change((s) => ({ ...s, videoAd: { ...s.videoAd, video: s.videoAd.video && { ...s.videoAd.video, [k]: n } } }));
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <Label htmlFor="ad-product">{t("videoAd.product")}</Label>
-              <select id="ad-product" className={select} value={v.videoAd.productSlug} onChange={(e) => change((s) => ({ ...s, videoAd: { ...s.videoAd, productSlug: e.target.value } }))}>
-                {!products.some((p) => p.slug === v.videoAd.productSlug) && (
-                  <option value={v.videoAd.productSlug}>{v.videoAd.productSlug ? t("unavailable", { slug: v.videoAd.productSlug }) : t("none")}</option>
-                )}
-                {cats.map((c) => (
-                  <optgroup key={c.slug} label={name(c)}>
-                    {products.filter((p) => p.category === c.slug).map((p) => <option key={p.slug} value={p.slug}>{name(p)}</option>)}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
-            {(["headlineEn", "headlineAr"] as const).map((k) => (
-              <div key={k}>
-                <Label htmlFor={`ad-${k}`}>{t(`videoAd.${k}`)}</Label>
-                <Input id={`ad-${k}`} dir={k === "headlineAr" ? "rtl" : "ltr"} maxLength={120} value={v.videoAd[k]} onChange={(e) => change((s) => ({ ...s, videoAd: { ...s.videoAd, [k]: e.target.value } }))} />
-              </div>
-            ))}
-          </div>
-          <div>
-            <Toggle checked={v.videoAd.inListings} label={t("videoAd.inListings")} onChange={(inListings) => change((s) => ({ ...s, videoAd: { ...s.videoAd, inListings } }))} />
-            <p className="mt-1 text-xs text-ink-500">{t("videoAd.inListingsHint")}</p>
-          </div>
-          {(!v.videoAd.video || !v.videoAd.productSlug) && <p className="text-xs font-semibold text-accent-700">{t("videoAd.needsVideo")}</p>}
-        </div>
-      </Box>
+      <HealthNeedsEditor needs={v.healthNeeds} cats={cats} onChange={(healthNeeds) => change((s) => ({ ...s, healthNeeds }))} />
+      <CollectionsEditor collections={v.collections} cats={cats} onChange={(collections) => change((s) => ({ ...s, collections }))} />
+      <OfferCodesEditor codes={v.offerCodes} coupons={coupons} onChange={(offerCodes) => change((s) => ({ ...s, offerCodes }))} />
 
       {/* Save bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-4 py-3 backdrop-blur lg:start-60">

@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/account"
 
 function Card({ href, icon: Icon, title, body }: { href: string; icon: LucideIcon; title: string; body: string }) {
   return (
-    <Link href={href} className="group flex items-start gap-3 rounded-sm border border-line bg-white p-4 hover:border-ink-400">
+    <Link href={href} className="group flex items-start gap-3 rounded-xl border border-line/70 bg-white p-4 shadow-box transition-shadow hover:shadow-card">
       <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-sm bg-brand-50 text-brand-700">
         <Icon className="size-5" aria-hidden />
       </span>

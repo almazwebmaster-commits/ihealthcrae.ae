@@ -62,7 +62,7 @@ export default async function CheckoutCompletePage({ params, searchParams }: Pag
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-2">
           {failed ? (
-            <Link href="/checkout" className={buttonClass("accent", "md")}>{t("tryAgain")}</Link>
+            <Link href="/checkout" className={buttonClass("primary", "md")}>{t("tryAgain")}</Link>
           ) : (
             <>
               {session && order.userId === session.user.id && (

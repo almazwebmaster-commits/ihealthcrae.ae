@@ -47,7 +47,7 @@ export function ProductRail({
           {aside}
         </div>
         {href && viewAllLabel && (
-          <Link href={href} className="group inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-brand-700 hover:text-brand-800">
+          <Link href={href} className="group inline-flex h-9 shrink-0 items-center gap-1 rounded-full bg-brand-50 px-3.5 text-sm font-semibold text-brand-800 hover:bg-brand-100">
             {viewAllLabel}
             <ChevronRight className="flip-rtl size-4 transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" aria-hidden />
           </Link>
@@ -57,9 +57,14 @@ export function ProductRail({
         <button type="button" aria-label={prevLabel} onClick={() => scroll(false)} className={cn(arrow, "-start-3")}>
           {rtl ? <ChevronRight className="size-5" aria-hidden /> : <ChevronLeft className="size-5" aria-hidden />}
         </button>
-        <div ref={track} className="no-scrollbar -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-1 pb-2 pt-1">
+        {/* Phones: bleeds to the screen edges and shows a sliver of the next card, so it reads as scrollable.
+            scroll-padding keeps snapping from pulling the first card flush against the edge. */}
+        <div
+          ref={track}
+          className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto scroll-smooth px-4 pb-2 pt-1 sm:-mx-1 sm:scroll-px-1 sm:gap-4 sm:px-1"
+        >
           {Children.map(children, (child) => (
-            <div className="w-[calc(50%-0.5rem)] shrink-0 snap-start sm:w-56">{child}</div>
+            <div className="w-[44%] shrink-0 snap-start sm:w-56">{child}</div>
           ))}
         </div>
         <button type="button" aria-label={nextLabel} onClick={() => scroll(true)} className={cn(arrow, "-end-3")}>
